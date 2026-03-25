@@ -2,7 +2,7 @@
 
 # Ranger AI Vault
 
-### AI-Powered Momentum + Mean-Reversion Hybrid Yield Vault on Solana
+### AI-Powered Momentum with Mean-Reversion Hybrid Yield Vault on Solana
 
 [![CI Pipeline](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-main.yml/badge.svg)](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-main.yml)
 [![Signal Engine](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-signal-engine.yml/badge.svg)](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-signal-engine.yml)
