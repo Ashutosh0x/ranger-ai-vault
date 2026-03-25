@@ -1,0 +1,30 @@
+# .github/actions/setup-solana/action.yml
+name: "Setup Solana"
+description: "Install Solana CLI and tools"
+
+inputs:
+  solana-version:
+    description: "Solana CLI version"
+    required: false
+    default: "1.18.17"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Solana CLI
+      shell: bash
+      run: |
+        sh -c "$(curl -sSfL https://release.solana.com/v${{ inputs.solana-version }}/install)"
+        echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+    - name: Verify install
+      shell: bash
+      run: |
+        solana --version
+        solana config set --url devnet
+
+    - name: Generate test keypair
+      shell: bash
+      run: |
+        solana-keygen new --no-bip39-passphrase --outfile ~/.config/solana/id.json --force
+        echo "Test keypair: $(solana-keygen pubkey)"

@@ -1,0 +1,286 @@
+# .github/workflows/ci-main.yml
+# Runs on every push and PR — orchestrates all sub-workflows
+
+name: "🏗️ CI — Full Pipeline"
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.10"
+  SOLANA_VERSION: "1.18.17"
+
+jobs:
+  # ═══════════════════════════════════════════════════════
+  # STAGE 1: VALIDATE (runs first, fast-fail)
+  # ═══════════════════════════════════════════════════════
+
+  validate-structure:
+    name: "📁 Validate Project Structure"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required files exist
+        run: |
+          echo "═══ Checking critical files ═══"
+          MISSING=0
+
+          check_file() {
+            if [ -f "$1" ]; then
+              echo "✅ $1"
+            else
+              echo "❌ MISSING: $1"
+              MISSING=$((MISSING + 1))
+            fi
+          }
+
+          # Root files
+          for f in .gitignore .env.example Makefile README.md; do
+            check_file "$f"
+          done
+
+          # Vault package
+          for f in vault/package.json vault/tsconfig.json vault/src/helper.ts vault/src/variables.ts vault/src/types.ts; do
+            check_file "$f"
+          done
+
+          # Vault constants
+          for f in vault/src/constants/drift.ts vault/src/constants/kamino.ts vault/src/constants/tokens.ts vault/src/constants/ranger.ts; do
+            check_file "$f"
+          done
+
+          # Vault scripts (all 15)
+          VAULT_SCRIPTS=(
+            "admin-init-vault" "admin-add-adaptors" "admin-init-strategies"
+            "admin-add-lp-metadata" "admin-update-config" "admin-init-direct-withdraw"
+            "manager-deposit-strategies" "manager-withdraw-strategies" "manager-rebalance"
+            "user-deposit-vault" "user-withdraw-vault" "user-direct-withdraw"
+            "query-vault-state" "query-strategy-positions" "query-performance"
+          )
+          for s in "${VAULT_SCRIPTS[@]}"; do
+            check_file "vault/src/scripts/${s}.ts"
+          done
+
+          # Signal engine (25 files)
+          SIGNAL_FILES=(
+            "signal-engine/src/__init__.py"
+            "signal-engine/src/config.py"
+            "signal-engine/src/signal_server.py"
+            "signal-engine/src/data/__init__.py"
+            "signal-engine/src/data/coinglass_fetcher.py"
+            "signal-engine/src/data/drift_fetcher.py"
+            "signal-engine/src/data/helius_fetcher.py"
+            "signal-engine/src/data/pyth_fetcher.py"
+            "signal-engine/src/data/data_store.py"
+            "signal-engine/src/features/__init__.py"
+            "signal-engine/src/features/feature_engineer.py"
+            "signal-engine/src/features/indicators.py"
+            "signal-engine/src/features/liquidation_features.py"
+            "signal-engine/src/models/__init__.py"
+            "signal-engine/src/models/momentum_model.py"
+            "signal-engine/src/models/meanrev_model.py"
+            "signal-engine/src/models/ensemble.py"
+            "signal-engine/src/models/model_registry.py"
+            "signal-engine/src/risk/__init__.py"
+            "signal-engine/src/risk/var_calculator.py"
+            "signal-engine/src/risk/position_sizer.py"
+            "signal-engine/src/risk/drawdown_monitor.py"
+            "signal-engine/src/risk/delta_monitor.py"
+            "signal-engine/training/train_models.py"
+            "signal-engine/training/backtest.py"
+          )
+          for f in "${SIGNAL_FILES[@]}"; do
+            check_file "$f"
+          done
+
+          # Keeper (22 files)
+          KEEPER_FILES=(
+            "keeper/package.json" "keeper/tsconfig.json"
+            "keeper/src/index.ts" "keeper/src/config.ts" "keeper/src/types.ts"
+            "keeper/src/core/keeper-loop.ts"
+            "keeper/src/core/signal-client.ts"
+            "keeper/src/core/state-manager.ts"
+            "keeper/src/core/rebalance-engine.ts"
+            "keeper/src/execution/drift-executor.ts"
+            "keeper/src/execution/vault-allocator.ts"
+            "keeper/src/execution/jupiter-executor.ts"
+            "keeper/src/execution/emergency-unwind.ts"
+            "keeper/src/attestation/ai-attestation.ts"
+            "keeper/src/attestation/attestation-verifier.ts"
+            "keeper/src/risk/risk-checker.ts"
+            "keeper/src/risk/position-tracker.ts"
+            "keeper/src/risk/drift-health-monitor.ts"
+            "keeper/src/monitoring/logger.ts"
+            "keeper/src/monitoring/metrics.ts"
+            "keeper/src/monitoring/alerter.ts"
+          )
+          for f in "${KEEPER_FILES[@]}"; do
+            check_file "$f"
+          done
+
+          # Dashboard
+          DASHBOARD_FILES=(
+            "dashboard/package.json"
+            "dashboard/next.config.js"
+            "dashboard/tailwind.config.js"
+            "dashboard/tsconfig.json"
+          )
+          for f in "${DASHBOARD_FILES[@]}"; do
+            check_file "$f"
+          done
+
+          # Check for dashboard pages in either app/ or src/app/
+          for page in page.tsx layout.tsx globals.css; do
+            if [ -f "dashboard/app/$page" ] || [ -f "dashboard/src/app/$page" ]; then
+              echo "✅ dashboard/$page"
+            else
+              echo "❌ MISSING: dashboard/$page"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+
+          # Submission & Docs
+          for f in docs/ARCHITECTURE.md submission/strategy-doc.md; do
+            check_file "$f"
+          done
+
+          # Infrastructure
+          check_file "infra/docker/docker-compose.yml"
+
+          echo ""
+          echo "═══════════════════════════════════"
+          TOTAL_CHECKED=$(find . -type f -not -path './.git/*' -not -path '*/node_modules/*' -not -path '*/__pycache__/*' -not -path '*/venv/*' -not -path '*/.next/*' | wc -l)
+          echo "Total files in repo: $TOTAL_CHECKED"
+          echo "Missing critical files: $MISSING"
+          echo "═══════════════════════════════════"
+
+          if [ $MISSING -gt 0 ]; then
+            echo ""
+            echo "⚠️ $MISSING critical files missing — review above"
+            exit 1
+          fi
+
+          echo "✅ All critical files present"
+
+  validate-env-template:
+    name: "🔐 Validate ENV Template"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check .env.example has all required vars
+        run: |
+          REQUIRED_VARS=(
+            "HELIUS_RPC_URL"
+            "COINGLASS_API_KEY"
+            "KEEPER_SECRET"
+            "VAULT_ADDRESS"
+            "ADMIN_KEYPAIR_PATH"
+            "MANAGER_KEYPAIR_PATH"
+          )
+
+          for var in "${REQUIRED_VARS[@]}"; do
+            if grep -q "$var" .env.example; then
+              echo "✅ $var found in .env.example"
+            else
+              echo "❌ $var MISSING from .env.example"
+              exit 1
+            fi
+          done
+
+  # ═══════════════════════════════════════════════════════
+  # STAGE 2: BUILD + LINT (parallel)
+  # ═══════════════════════════════════════════════════════
+
+  signal-engine:
+    name: "🐍 Signal Engine"
+    needs: [validate-structure]
+    uses: ./.github/workflows/ci-signal-engine.yml
+    secrets: inherit
+
+  keeper:
+    name: "🤖 Keeper Bot"
+    needs: [validate-structure]
+    uses: ./.github/workflows/ci-keeper.yml
+    secrets: inherit
+
+  vault:
+    name: "🏦 Vault Scripts"
+    needs: [validate-structure]
+    uses: ./.github/workflows/ci-vault.yml
+    secrets: inherit
+
+  dashboard:
+    name: "🖥️ Dashboard"
+    needs: [validate-structure]
+    uses: ./.github/workflows/ci-dashboard.yml
+    secrets: inherit
+
+  # ═══════════════════════════════════════════════════════
+  # STAGE 3: INTEGRATION (after all packages pass)
+  # ═══════════════════════════════════════════════════════
+
+  integration:
+    name: "🔗 Integration Tests"
+    needs: [signal-engine, keeper, vault, dashboard]
+    uses: ./.github/workflows/ci-integration.yml
+    secrets: inherit
+
+  # ═══════════════════════════════════════════════════════
+  # STAGE 4: BACKTEST (after integration passes)
+  # ═══════════════════════════════════════════════════════
+
+  backtest:
+    name: "📊 Backtest + Artifacts"
+    needs: [integration]
+    uses: ./.github/workflows/ci-backtest.yml
+    secrets: inherit
+
+  # ═══════════════════════════════════════════════════════
+  # STAGE 5: FINAL SUMMARY
+  # ═══════════════════════════════════════════════════════
+
+  summary:
+    name: "📋 CI Summary"
+    needs: [validate-structure, validate-env-template, signal-engine, keeper, vault, dashboard, integration, backtest]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## 🏗️ Ranger AI Vault — CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 📁 Structure | ${{ needs.validate-structure.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔐 ENV Template | ${{ needs.validate-env-template.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🐍 Signal Engine | ${{ needs.signal-engine.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🤖 Keeper Bot | ${{ needs.keeper.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏦 Vault Scripts | ${{ needs.vault.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🖥️ Dashboard | ${{ needs.dashboard.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔗 Integration | ${{ needs.integration.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Backtest | ${{ needs.backtest.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.validate-structure.result }}" = "success" ] && \
+             [ "${{ needs.signal-engine.result }}" = "success" ] && \
+             [ "${{ needs.keeper.result }}" = "success" ] && \
+             [ "${{ needs.vault.result }}" = "success" ] && \
+             [ "${{ needs.dashboard.result }}" = "success" ] && \
+             [ "${{ needs.integration.result }}" = "success" ] && \
+             [ "${{ needs.backtest.result }}" = "success" ]; then
+            echo "### ✅ ALL CHECKS PASSED — Ready for submission" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ SOME CHECKS FAILED — Fix before submitting" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

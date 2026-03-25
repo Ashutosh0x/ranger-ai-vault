@@ -1,0 +1,7 @@
+# CODEOWNERS -- auto-assign reviewers
+* @ashut
+vault/ @ashut
+signal-engine/ @ashut
+keeper/ @ashut
+dashboard/ @ashut
+.github/ @ashut

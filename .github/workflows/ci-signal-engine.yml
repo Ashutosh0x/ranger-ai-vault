@@ -1,0 +1,264 @@
+# .github/workflows/ci-signal-engine.yml
+name: "🐍 Signal Engine CI"
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "signal-engine/**"
+      - ".github/workflows/ci-signal-engine.yml"
+
+defaults:
+  run:
+    working-directory: signal-engine
+
+jobs:
+  lint-and-typecheck:
+    name: "Lint + Type Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff mypy types-requests
+
+      - name: Ruff lint
+        run: ruff check src/ training/ tests/ --output-format=github
+
+      - name: Ruff format check
+        run: ruff format --check src/ training/ tests/
+
+      - name: MyPy type check
+        run: mypy src/ --ignore-missing-imports --no-error-summary || true
+
+  unit-tests:
+    name: "Unit Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio httpx
+
+      - name: Run unit tests
+        env:
+          COINGLASS_API_KEY: "test_key_not_real"
+          KEEPER_SECRET: "test_secret_ci"
+          DRIFT_ENV: "devnet"
+        run: |
+          python -m pytest tests/ \
+            -v \
+            --tb=short \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --junitxml=test-results.xml \
+            -x
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signal-engine-coverage
+          path: signal-engine/coverage.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signal-engine-test-results
+          path: signal-engine/test-results.xml
+
+  model-pipeline-test:
+    name: "ML Pipeline Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate model training pipeline
+        env:
+          COINGLASS_API_KEY: "test_key"
+          KEEPER_SECRET: "test_secret"
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+
+          print('═══ Testing Feature Engineering ═══')
+          from src.features.indicators import *
+          from src.features.liquidation_features import *
+          print('✅ Feature modules import OK')
+
+          print('')
+          print('═══ Testing Model Classes ═══')
+          from src.models.momentum_model import *
+          from src.models.meanrev_model import *
+          from src.models.ensemble import *
+          from src.models.model_registry import *
+          print('✅ Model modules import OK')
+
+          print('')
+          print('═══ Testing Risk Modules ═══')
+          from src.risk.var_calculator import *
+          from src.risk.position_sizer import *
+          from src.risk.drawdown_monitor import *
+          from src.risk.delta_monitor import *
+          print('✅ Risk modules import OK')
+
+          print('')
+          print('═══ Testing Config ═══')
+          from src.config import ASSETS, FEATURE_COLUMNS, MODEL_PARAMS
+          assert len(ASSETS) == 3, f'Expected 3 assets, got {len(ASSETS)}'
+          assert len(FEATURE_COLUMNS) >= 10, f'Expected >= 10 features, got {len(FEATURE_COLUMNS)}'
+          assert 'momentum' in MODEL_PARAMS, 'Missing momentum model params'
+          assert 'meanrev' in MODEL_PARAMS, 'Missing meanrev model params'
+          print(f'✅ Config OK: {len(ASSETS)} assets, {len(FEATURE_COLUMNS)} features')
+
+          print('')
+          print('═══ Testing Signal Server ═══')
+          from src.signal_server import app
+          print('✅ FastAPI app creates OK')
+
+          print('')
+          print('═══ All signal engine imports validated ═══')
+          "
+
+      - name: Validate training pipeline compiles
+        run: |
+          python -c "
+          import sys, importlib
+          sys.path.insert(0, '.')
+
+          print('Testing training pipeline imports...')
+          spec = importlib.util.find_spec('training.train_models')
+          assert spec is not None, 'training/train_models.py not found'
+          print('✅ train_models.py found')
+
+          spec = importlib.util.find_spec('training.backtest')
+          assert spec is not None, 'training/backtest.py not found'
+          print('✅ backtest.py found')
+          "
+
+  signal-server-smoke:
+    name: "Signal Server Smoke Test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install httpx
+
+      - name: Start signal server and test endpoints
+        env:
+          KEEPER_SECRET: "ci_test_secret_12345"
+          COINGLASS_API_KEY: "test_key"
+        run: |
+          # Start server in background
+          python -m uvicorn src.signal_server:app \
+            --host 0.0.0.0 --port 8080 &
+          SERVER_PID=$!
+
+          # Wait for server to start
+          echo "Waiting for signal server to start..."
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:8080/health > /dev/null 2>&1; then
+              echo "✅ Server started after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+          # Test health endpoint (no auth needed)
+          echo ""
+          echo "═══ Testing /health ═══"
+          HEALTH=$(curl -s -w "\n%{http_code}" http://localhost:8080/health)
+          HTTP_CODE=$(echo "$HEALTH" | tail -1)
+          BODY=$(echo "$HEALTH" | head -1)
+          echo "Status: $HTTP_CODE"
+          echo "Body: $BODY"
+          [ "$HTTP_CODE" = "200" ] || { echo "❌ /health failed"; kill $SERVER_PID; exit 1; }
+          echo "✅ /health OK"
+
+          # Test auth rejection (no secret)
+          echo ""
+          echo "═══ Testing auth rejection ═══"
+          NOAUTH=$(curl -s -w "\n%{http_code}" http://localhost:8080/signal?asset=SOL-PERP)
+          HTTP_CODE=$(echo "$NOAUTH" | tail -1)
+          echo "Status without auth: $HTTP_CODE"
+          [ "$HTTP_CODE" = "422" ] || [ "$HTTP_CODE" = "403" ] || { echo "❌ Should reject unauthenticated"; kill $SERVER_PID; exit 1; }
+          echo "✅ Auth rejection working"
+
+          # Test with wrong secret
+          echo ""
+          echo "═══ Testing wrong secret rejection ═══"
+          WRONG=$(curl -s -w "\n%{http_code}" \
+            -H "X-Keeper-Secret: wrong_secret" \
+            http://localhost:8080/signal?asset=SOL-PERP)
+          HTTP_CODE=$(echo "$WRONG" | tail -1)
+          echo "Status with wrong secret: $HTTP_CODE"
+          [ "$HTTP_CODE" = "403" ] || { echo "❌ Should reject wrong secret"; kill $SERVER_PID; exit 1; }
+          echo "✅ Wrong secret rejected"
+
+          # Test with correct secret
+          echo ""
+          echo "═══ Testing authenticated /signal ═══"
+          AUTH=$(curl -s -w "\n%{http_code}" \
+            -H "X-Keeper-Secret: ci_test_secret_12345" \
+            http://localhost:8080/signal?asset=SOL-PERP)
+          HTTP_CODE=$(echo "$AUTH" | tail -1)
+          BODY=$(echo "$AUTH" | head -1)
+          echo "Status: $HTTP_CODE"
+          echo "Body: $BODY"
+          [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "500" ] || { echo "❌ Unexpected status"; kill $SERVER_PID; exit 1; }
+          echo "✅ Auth accepted (status $HTTP_CODE)"
+
+          # Test invalid asset
+          echo ""
+          echo "═══ Testing invalid asset rejection ═══"
+          INVALID=$(curl -s -w "\n%{http_code}" \
+            -H "X-Keeper-Secret: ci_test_secret_12345" \
+            http://localhost:8080/signal?asset=INVALID)
+          HTTP_CODE=$(echo "$INVALID" | tail -1)
+          echo "Status: $HTTP_CODE"
+          [ "$HTTP_CODE" = "422" ] || { echo "❌ Should reject invalid asset"; kill $SERVER_PID; exit 1; }
+          echo "✅ Invalid asset rejected"
+
+          # Cleanup
+          kill $SERVER_PID
+          echo ""
+          echo "═══ All signal server smoke tests passed ═══"

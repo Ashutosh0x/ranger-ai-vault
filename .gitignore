@@ -1,0 +1,57 @@
+# ═══ Dependencies ═══
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ═══ Build outputs ═══
+.next/
+dist/
+build/
+*.js.map
+
+# ═══ Environment ═══
+.env
+.env.local
+.env.production
+.env.*.local
+
+# ═══ Keys (CRITICAL — never commit) ═══
+vault/keys/*.json
+!vault/keys/.gitkeep
+keeper/keys/*.json
+!keeper/keys/.gitkeep
+
+# ═══ ML Models (too large for git) ═══
+signal-engine/models/saved/*.joblib
+signal-engine/models/saved/*.pkl
+signal-engine/data/cache/*.parquet
+signal-engine/data/cache/*.csv
+
+# ═══ IDE ═══
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ═══ Logs ═══
+logs/
+*.log
+
+# ═══ Coverage ═══
+coverage/
+*.coverage
+htmlcov/
+coverage.xml
+
+# ═══ OS ═══
+Thumbs.db
+.DS_Store
+
+# ═══ Temporary ═══
+tmp/
+temp/
+*.tmp

@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  signal-engine:
+    build:
+      context: ../../signal-engine
+      dockerfile: ../infra/docker/Dockerfile.signal
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../../.env
+    environment:
+      - KEEPER_SECRET=${KEEPER_SECRET}
+      - COINGLASS_API_KEY=${COINGLASS_API_KEY}
+      - DRIFT_ENV=mainnet-beta
+    volumes:
+      - ../../signal-engine/models/saved:/app/models/saved:ro
+      - ../../signal-engine/data/cache:/app/data/cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  keeper:
+    build:
+      context: ../../keeper
+      dockerfile: ../infra/docker/Dockerfile.keeper
+    env_file:
+      - ../../.env
+    environment:
+      - SIGNAL_SERVER_URL=http://signal-engine:8080
+      - KEEPER_SECRET=${KEEPER_SECRET}
+      - HELIUS_RPC_URL=${HELIUS_RPC_URL}
+    volumes:
+      - ../../keeper/keys:/app/keys:ro
+    depends_on:
+      signal-engine:
+        condition: service_healthy
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ../../dashboard
+      dockerfile: ../infra/docker/Dockerfile.dashboard
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../../.env
+    environment:
+      - NEXT_PUBLIC_SIGNAL_URL=http://localhost:8080
+      - HELIUS_RPC_URL=${HELIUS_RPC_URL}
+      - VAULT_ADDRESS=${VAULT_ADDRESS}
+    depends_on:
+      - signal-engine
+    restart: unless-stopped

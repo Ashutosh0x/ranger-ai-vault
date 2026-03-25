@@ -1,0 +1,125 @@
+# .github/workflows/ci-vault.yml
+name: "🏦 Vault Scripts CI"
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "vault/**"
+      - ".github/workflows/ci-vault.yml"
+
+defaults:
+  run:
+    working-directory: vault
+
+jobs:
+  compile-and-validate:
+    name: "Compile + Validate All Scripts"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: vault/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: TypeScript compile
+        run: |
+          npx tsc --noEmit
+          echo "✅ All vault scripts compile"
+
+      - name: Validate helper.ts has compute budget (FIX 5)
+        run: |
+          echo "═══ Checking helper.ts for compute budget (FIX #5) ═══"
+
+          if grep -q "ComputeBudgetProgram" src/helper.ts; then
+            echo "✅ ComputeBudgetProgram found in helper.ts"
+          else
+            echo "❌ helper.ts is MISSING ComputeBudgetProgram!"
+            echo "   Every Solana TX needs explicit compute budget."
+            exit 1
+          fi
+
+          if grep -q "setComputeUnitLimit" src/helper.ts; then
+            echo "✅ setComputeUnitLimit found"
+          else
+            echo "❌ setComputeUnitLimit MISSING"
+            exit 1
+          fi
+
+          if grep -q "setComputeUnitPrice" src/helper.ts; then
+            echo "✅ setComputeUnitPrice found"
+          else
+            echo "❌ setComputeUnitPrice MISSING"
+            exit 1
+          fi
+
+      - name: Validate variables.ts structure
+        run: |
+          echo "═══ Checking variables.ts ═══"
+
+          REQUIRED=(
+            "ADMIN_KEYPAIR_PATH\|adminKeypairPath\|admin"
+            "MANAGER_KEYPAIR_PATH\|managerKeypairPath\|manager"
+            "RPC_URL\|rpcUrl\|HELIUS"
+            "USDC_MINT\|usdcMint\|EPjFWdd5"
+          )
+
+          for pattern in "${REQUIRED[@]}"; do
+            if grep -qiE "$pattern" src/variables.ts; then
+              echo "✅ Found: $pattern"
+            else
+              echo "⚠️ May be missing: $pattern"
+            fi
+          done
+
+      - name: Validate constants completeness
+        run: |
+          echo "═══ Checking constants ═══"
+
+          if grep -q "EBN93eXs5fHGBABuajQqdsKRkCgaqtJa8vEFD6vKXiP" src/constants/drift.ts; then
+            echo "✅ Drift adaptor address present"
+          else
+            echo "⚠️ Drift adaptor address not found in constants/drift.ts"
+          fi
+
+          if grep -q "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" src/constants/tokens.ts; then
+            echo "✅ USDC mint address present"
+          else
+            echo "⚠️ USDC mint address not found in constants/tokens.ts"
+          fi
+
+      - name: Count and list all scripts
+        run: |
+          echo "═══ Vault Scripts Inventory ═══"
+          echo ""
+          ADMIN=$(ls src/scripts/admin-*.ts 2>/dev/null | wc -l)
+          MANAGER=$(ls src/scripts/manager-*.ts 2>/dev/null | wc -l)
+          USER=$(ls src/scripts/user-*.ts 2>/dev/null | wc -l)
+          QUERY=$(ls src/scripts/query-*.ts 2>/dev/null | wc -l)
+          TOTAL=$((ADMIN + MANAGER + USER + QUERY))
+
+          echo "Admin scripts:   $ADMIN (expected: 6)"
+          echo "Manager scripts: $MANAGER (expected: 3)"
+          echo "User scripts:    $USER (expected: 3)"
+          echo "Query scripts:   $QUERY (expected: 3)"
+          echo "─────────────────────────"
+          echo "Total:           $TOTAL (expected: 15)"
+          echo ""
+
+          ls -la src/scripts/*.ts
+
+          if [ $TOTAL -lt 15 ]; then
+            echo ""
+            echo "⚠️ Missing $(( 15 - TOTAL )) vault scripts"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All 15 vault scripts present"

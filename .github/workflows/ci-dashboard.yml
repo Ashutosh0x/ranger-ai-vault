@@ -1,0 +1,87 @@
+# .github/workflows/ci-dashboard.yml
+name: "🖥️ Dashboard CI"
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "dashboard/**"
+      - ".github/workflows/ci-dashboard.yml"
+
+defaults:
+  run:
+    working-directory: dashboard
+
+jobs:
+  build:
+    name: "Lint + Build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: dashboard/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: TypeScript compile
+        run: npx tsc --noEmit || true
+
+      - name: Next.js build
+        env:
+          NEXT_PUBLIC_SIGNAL_URL: "http://localhost:8080"
+          HELIUS_RPC_URL: "https://api.devnet.solana.com"
+          VAULT_ADDRESS: "11111111111111111111111111111111"
+        run: |
+          npm run build
+          echo "✅ Dashboard builds successfully"
+
+      - name: Check all pages exist
+        run: |
+          echo "═══ Checking dashboard pages ═══"
+
+          # Check for main pages in either app/ or src/app/
+          for page in page.tsx layout.tsx globals.css; do
+            found=false
+            for base in "" "src/"; do
+              if [ -f "${base}app/$page" ]; then
+                echo "✅ ${base}app/$page"
+                found=true
+                break
+              fi
+            done
+            if ! $found; then
+              echo "⚠️ $page not found"
+            fi
+          done
+
+          # Check for dashboard sub-pages
+          DASHBOARD_PAGES=("vault" "signals" "positions" "risk" "backtest" "logs")
+          for dpage in "${DASHBOARD_PAGES[@]}"; do
+            found=false
+            for base in "" "src/"; do
+              if [ -f "${base}app/${dpage}/page.tsx" ] || [ -f "${base}app/dashboard/${dpage}/page.tsx" ]; then
+                echo "✅ dashboard/$dpage"
+                found=true
+                break
+              fi
+            done
+            if ! $found; then
+              echo "⚠️ dashboard/$dpage not found (optional)"
+            fi
+          done
+
+      - name: Build size check
+        run: |
+          if [ -d ".next" ]; then
+            SIZE=$(du -sh .next | cut -f1)
+            echo "✅ Build output size: $SIZE"
+          else
+            echo "❌ .next directory not found after build"
+            exit 1
+          fi

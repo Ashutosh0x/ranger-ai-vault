@@ -1,0 +1,37 @@
+# Backtest configuration for Strategy #3
+backtest:
+  name: "AI Momentum + Mean-Reversion Hybrid"
+  start_date: "2025-09-01"
+  end_date: "2026-03-09"
+  initial_capital: 100000
+
+assets:
+  - SOL-PERP
+  - BTC-PERP
+  - ETH-PERP
+
+allocation:
+  kamino_floor_pct: 0.50
+  active_trading_pct: 0.50
+  kamino_apy: 0.08
+
+signal:
+  momentum_weight: 0.4
+  meanrev_weight: 0.6
+  long_threshold: 0.6
+  short_threshold: -0.6
+  close_threshold: 0.15
+
+risk:
+  max_daily_drawdown: 0.03
+  max_monthly_drawdown: 0.08
+  stop_loss_per_trade: -0.005
+  take_profit_per_trade: 0.015
+  max_concurrent_positions: 3
+  kelly_fraction: 0.25
+  max_leverage: 2.0
+
+execution:
+  signal_interval_minutes: 15
+  slippage_bps: 5
+  funding_rate_collection: true

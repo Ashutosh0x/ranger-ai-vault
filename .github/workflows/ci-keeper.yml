@@ -1,0 +1,225 @@
+# .github/workflows/ci-keeper.yml
+name: "🤖 Keeper CI"
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "keeper/**"
+      - ".github/workflows/ci-keeper.yml"
+
+defaults:
+  run:
+    working-directory: keeper
+
+jobs:
+  lint-and-typecheck:
+    name: "Lint + Type Check + Compile"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: keeper/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: TypeScript compile (strict check)
+        run: |
+          npx tsc --noEmit 2>&1 | head -100
+          TSC_EXIT=${PIPESTATUS[0]}
+
+          if [ $TSC_EXIT -ne 0 ]; then
+            echo ""
+            echo "❌ TypeScript compilation errors found"
+            echo "Run 'npx tsc --noEmit' locally to see full output"
+            exit 1
+          fi
+
+          echo "✅ TypeScript compilation passed"
+
+      - name: Check all imports resolve
+        env:
+          KEEPER_SECRET: "test"
+          SIGNAL_SERVER_URL: "http://localhost:8080"
+          HELIUS_RPC_URL: "https://api.devnet.solana.com"
+        run: |
+          echo "═══ Validating import graph ═══"
+
+          ERRORS=0
+          for f in $(find src -name "*.ts" -not -name "*.test.ts" -not -name "*.d.ts"); do
+            npx ts-node --transpile-only -e "require('./$f')" 2>/dev/null
+            if [ $? -ne 0 ]; then
+              echo "❌ Import error in: $f"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "✅ $f"
+            fi
+          done
+
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "❌ $ERRORS files have import errors"
+            exit 1
+          fi
+
+          echo "✅ All imports resolve"
+
+  unit-tests:
+    name: "Unit Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: keeper/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Jest tests
+        env:
+          KEEPER_SECRET: "ci_test_secret"
+          SIGNAL_SERVER_URL: "http://localhost:8080"
+          HELIUS_RPC_URL: "https://api.devnet.solana.com"
+        run: |
+          npx jest \
+            --verbose \
+            --coverage \
+            --coverageReporters=text \
+            --coverageReporters=cobertura \
+            --forceExit \
+            --detectOpenHandles \
+            --testTimeout=30000
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: keeper-coverage
+          path: keeper/coverage/
+
+  import-chain:
+    name: "Import Chain Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: keeper/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate full import chain (16 modules)
+        env:
+          KEEPER_SECRET: "test"
+          SIGNAL_SERVER_URL: "http://localhost:8080"
+          HELIUS_RPC_URL: "https://api.devnet.solana.com"
+        run: |
+          echo "═══ Testing full keeper import chain ═══"
+          npx ts-node -e "
+          console.log('Testing imports...');
+
+          // Core
+          const { SignalClient } = require('./src/core/signal-client');
+          console.log('✅ signal-client');
+
+          const { StateManager } = require('./src/core/state-manager');
+          console.log('✅ state-manager');
+
+          const { RebalanceEngine } = require('./src/core/rebalance-engine');
+          console.log('✅ rebalance-engine');
+
+          // Execution
+          const { DriftExecutor } = require('./src/execution/drift-executor');
+          console.log('✅ drift-executor');
+
+          const { VaultAllocator } = require('./src/execution/vault-allocator');
+          console.log('✅ vault-allocator');
+
+          const { JupiterExecutor } = require('./src/execution/jupiter-executor');
+          console.log('✅ jupiter-executor');
+
+          const { EmergencyUnwind } = require('./src/execution/emergency-unwind');
+          console.log('✅ emergency-unwind');
+
+          // Attestation
+          const { AIAttestation } = require('./src/attestation/ai-attestation');
+          console.log('✅ ai-attestation');
+
+          const { AttestationVerifier } = require('./src/attestation/attestation-verifier');
+          console.log('✅ attestation-verifier');
+
+          // Risk
+          const { RiskChecker } = require('./src/risk/risk-checker');
+          console.log('✅ risk-checker');
+
+          const { PositionTracker } = require('./src/risk/position-tracker');
+          console.log('✅ position-tracker');
+
+          const { DriftHealthMonitor } = require('./src/risk/drift-health-monitor');
+          console.log('✅ drift-health-monitor');
+
+          // Monitoring
+          const { logger } = require('./src/monitoring/logger');
+          console.log('✅ logger');
+
+          const { MetricsCollector } = require('./src/monitoring/metrics');
+          console.log('✅ metrics');
+
+          const { Alerter } = require('./src/monitoring/alerter');
+          console.log('✅ alerter');
+
+          // Config
+          const { RISK_PARAMS, EXECUTION_PARAMS, VAULT_CONFIG } = require('./src/config');
+          console.log('✅ config');
+
+          console.log('');
+          console.log('═══ All 16 keeper modules import successfully ═══');
+          " 2>&1
+
+  dry-run:
+    name: "Keeper Dry Run"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: keeper/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Keeper dry run (validate startup sequence)
+        env:
+          KEEPER_SECRET: "ci_test_secret"
+          SIGNAL_SERVER_URL: "http://localhost:8080"
+          HELIUS_RPC_URL: "https://api.devnet.solana.com"
+          DRY_RUN: "true"
+        run: |
+          timeout 15 npx ts-node src/index.ts || EXIT_CODE=$?
+
+          if [ "${EXIT_CODE:-0}" = "124" ] || [ "${EXIT_CODE:-0}" = "0" ]; then
+            echo "✅ Keeper started successfully (dry run)"
+          else
+            echo "❌ Keeper crashed on startup (exit code: $EXIT_CODE)"
+            exit 1
+          fi

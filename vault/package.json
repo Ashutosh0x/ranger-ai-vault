@@ -1,0 +1,39 @@
+{
+  "name": "ranger-vault",
+  "version": "1.0.0",
+  "description": "Ranger AI Vault — Vault management scripts (Voltr SDK)",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "admin:init-vault": "ts-node src/scripts/admin-init-vault.ts",
+    "admin:add-adaptors": "ts-node src/scripts/admin-add-adaptors.ts",
+    "admin:init-strategies": "ts-node src/scripts/admin-init-strategies.ts",
+    "admin:lp-metadata": "ts-node src/scripts/admin-add-lp-metadata.ts",
+    "admin:update-config": "ts-node src/scripts/admin-update-config.ts",
+    "admin:direct-withdraw": "ts-node src/scripts/admin-init-direct-withdraw.ts",
+    "manager:deposit": "ts-node src/scripts/manager-deposit-strategies.ts",
+    "manager:withdraw": "ts-node src/scripts/manager-withdraw-strategies.ts",
+    "manager:rebalance": "ts-node src/scripts/manager-rebalance.ts",
+    "user:deposit": "ts-node src/scripts/user-deposit-vault.ts",
+    "user:withdraw": "ts-node src/scripts/user-withdraw-vault.ts",
+    "user:direct-withdraw": "ts-node src/scripts/user-direct-withdraw.ts",
+    "query:vault": "ts-node src/scripts/query-vault-state.ts",
+    "query:strategies": "ts-node src/scripts/query-strategy-positions.ts",
+    "query:performance": "ts-node src/scripts/query-performance.ts"
+  },
+  "dependencies": {
+    "@voltr/vault-sdk": "latest",
+    "@solana/web3.js": "^1.95.0",
+    "@solana/spl-token": "^0.4.0",
+    "@drift-labs/sdk": "^2.70.0",
+    "@coral-xyz/anchor": "^0.30.0",
+    "@metaplex-foundation/mpl-token-metadata": "^3.0.0",
+    "bs58": "^5.0.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^20.11.0"
+  }
+}
