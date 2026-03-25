@@ -17,7 +17,7 @@ from src.features.indicators import bollinger_bands, price_momentum
 from src.models.momentum_model import MomentumModel
 from src.models.meanrev_model import MeanRevModel
 from src.models.model_registry import get_model_registry
-from src.config import ASSETS, FEATURE_COLUMNS, TRAINING_CONFIG, MODEL_PARAMS
+from src.config import ASSETS, FEATURE_COLUMNS, TRAINING_CONFIG
 
 
 def fetch_training_data(asset: str) -> pd.DataFrame:

@@ -15,7 +15,7 @@ class HeliusFetcher:
     def __init__(self):
         self.rpc_url = os.environ.get("HELIUS_RPC_URL", HELIUS_RPC_URL)
         self.api_key = self._extract_api_key()
-        self.base_url = f"https://api.helius.xyz/v0"
+        self.base_url = "https://api.helius.xyz/v0"
         self.session = requests.Session()
 
     def _extract_api_key(self) -> str:

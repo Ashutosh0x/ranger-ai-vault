@@ -11,10 +11,7 @@ from src.data.drift_fetcher import get_drift_fetcher
 from src.data.pyth_fetcher import get_pyth_fetcher
 from src.features.indicators import (
     bollinger_bands,
-    rsi,
     price_momentum,
-    atr,
-    vwap,
 )
 from src.features.liquidation_features import get_liquidation_features
 from src.config import FEATURE_COLUMNS
