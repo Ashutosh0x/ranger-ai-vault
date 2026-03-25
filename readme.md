@@ -80,32 +80,14 @@ Ranger AI Vault is a **production-ready, AI-driven yield vault** built on [Range
 
 The vault accepts USDC deposits, deploys across two strategy engines, and uses an off-chain AI signal engine with on-chain Ed25519 cryptographic attestation to execute trades — all wrapped in a 6-layer risk management framework.
 
-```
-                     USDC Deposits
-                          |
-                +---------v----------+
-                |   RANGER EARN      |
-                |   VAULT (USDC)     |
-                |                    |
-                |  +------+ +------+ |
-                |  |50%   | |50%   | |
-                |  |Floor | |Active| |
-                |  |Yield | |Trade | |
-                |  +--+---+ +--+---+ |
-                +-----+--------+-----+
-                      |        |
-              +-------v--+ +--v--------+
-              | Kamino   | | Drift     |
-              | Lending  | | Perps     |
-              | 4-12%APY | | SOL/BTC/  |
-              |          | | ETH       |
-              +----------+ +-----+-----+
-                                 |
-                          +------v------+
-                          | AI Signal   |
-                          | Engine      |
-                          | (XGBoost)   |
-                          +-------------+
+```mermaid
+graph TD
+    Deposits["USDC Deposits"] --> Vault["Ranger Earn Vault"]
+    Vault --> FloorEngine["50% Floor Yield"]
+    Vault --> ActiveEngine["50% Active Trading"]
+    FloorEngine --> Kamino["Kamino Lending\n4-12% APY"]
+    ActiveEngine --> Drift["Drift Perps\nSOL / BTC / ETH"]
+    Drift --> Signal["AI Signal Engine\nXGBoost Ensemble"]
 ```
 
 ### Built With
@@ -135,33 +117,28 @@ Most DeFi yield vaults fall into two categories:
 
 We combine both in a single vault with a **provable yield floor** and **AI-enhanced alpha capture**:
 
-```
-+--------------------------------------------------------------+
-|                                                              |
-| FLOOR ENGINE (50% of vault)                                  |
-| --------------------------                                   |
-| - USDC deposited in Kamino Lending                           |
-| - Earns 4-12% APY from lending interest                     |
-| - Always active -- provides minimum yield                    |
-| - Rewards auto-compounded every hour                         |
-|                                                              |
-| ACTIVE ENGINE (50% of vault)                                 |
-| ---------------------------                                  |
-| - ML model predicts 1-hour forward returns                   |
-| - Momentum sub-model (40% weight): trend-following           |
-| - Mean-reversion sub-model (60% weight): fade extremes       |
-| - Trades SOL-PERP, BTC-PERP, ETH-PERP on Drift              |
-| - Delta-neutral wrapper: net delta maintained near zero       |
-| - Funding rate collection as additional yield                 |
-|                                                              |
-| NOVEL ALPHA SOURCE                                           |
-| ------------------                                           |
-| - Coinglass liquidation heatmap data as ML feature           |
-| - Liquidation clusters act as price "magnets"                |
-| - Proximity-to-cluster predicts mean-reversion probability   |
-| - No other hackathon submission uses this signal              |
-|                                                              |
-+--------------------------------------------------------------+
+```mermaid
+graph LR
+    subgraph Floor["Floor Engine -- 50% of Vault"]
+        F1["USDC in Kamino Lending"]
+        F2["4-12% APY from interest"]
+        F3["Always active -- minimum yield"]
+        F4["Rewards compounded hourly"]
+    end
+
+    subgraph Active["Active Engine -- 50% of Vault"]
+        A1["ML predicts 1h forward returns"]
+        A2["Momentum sub-model: 40% weight"]
+        A3["Mean-rev sub-model: 60% weight"]
+        A4["SOL-PERP, BTC-PERP, ETH-PERP"]
+        A5["Delta-neutral wrapper"]
+    end
+
+    subgraph Novel["Novel Alpha Source"]
+        N1["Coinglass liquidation heatmap"]
+        N2["Clusters act as price magnets"]
+        N3["Predicts mean-reversion probability"]
+    end
 ```
 
 ### Why This Works
@@ -191,87 +168,53 @@ We combine both in a single vault with a **provable yield floor** and **AI-enhan
 
 > **Full architecture documentation with 18 interactive Mermaid diagrams:** [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 
-```
-+------------------------------------------------------------------+
-|                         SOLANA BLOCKCHAIN                          |
-|                                                                    |
-|  +----------------+  +------------------+  +--------------------+  |
-|  | RANGER VAULT   |  | DRIFT PROTOCOL   |  | KAMINO FINANCE     |  |
-|  | (Voltr SDK)    |  | SOL/BTC/ETH-PERP |  | USDC Lending       |  |
-|  | LP tokens      |  | Funding rates    |  | Auto-compound      |  |
-|  | 3 strategies   |  |                  |  |                    |  |
-|  +-------+--------+  +--------+---------+  +--------+-----------+  |
-|          |                     |                     |             |
-|  +-------+---------------------+---------------------+----------+  |
-|  |         DRIFT ADAPTOR / KAMINO ADAPTOR (Integration)          |  |
-|  +-------------------------------+-------------------------------+  |
-+----------------------------------|-----------------------------------+
-                                   |
-                     Transactions (Ed25519 attested)
-                                   |
-                    +--------------v----------------+
-                    |   KEEPER BOT (TypeScript)      |
-                    |   3 Loops:                     |
-                    |   - Receipt Refresh    (5 min) |
-                    |   - Reward Compound    (1 hr)  |
-                    |   - Signal Rebalance  (15 min) |
-                    +--------------+----------------+
-                                   |
-                         HTTP (authenticated)
-                                   |
-                    +--------------v----------------+
-                    |   SIGNAL ENGINE (Python)       |
-                    |   XGBoost Ensemble             |
-                    |   17 Features, 4 Data Sources  |
-                    +--------------+----------------+
-                                   |
-                         HTTP (read-only)
-                                   |
-                    +--------------v----------------+
-                    |   DASHBOARD (Next.js 14)       |
-                    |   7 Pages                      |
-                    +-------------------------------+
+```mermaid
+graph TB
+    subgraph Solana["Solana Blockchain"]
+        Vault["Ranger Vault (Voltr SDK)\nLP tokens | 3 strategies"]
+        DriftP["Drift Protocol\nSOL/BTC/ETH-PERP"]
+        KaminoP["Kamino Finance\nUSDC Lending"]
+        Adaptors["Drift Adaptor / Kamino Adaptor"]
+        Vault --- Adaptors
+        DriftP --- Adaptors
+        KaminoP --- Adaptors
+    end
+
+    Adaptors -->|"Ed25519 attested TXs"| Keeper
+
+    Keeper["Keeper Bot (TypeScript)\nReceipt Refresh: 5 min\nReward Compound: 1 hr\nSignal Rebalance: 15 min"]
+
+    Keeper -->|"HTTP (authenticated)"| Signal
+
+    Signal["Signal Engine (Python)\nXGBoost Ensemble\n17 Features | 4 Data Sources"]
+
+    Signal -->|"HTTP (read-only)"| Dashboard
+
+    Dashboard["Dashboard (Next.js 14)\n7 Pages"]
 ```
 
 ### Data Flow (Every 15 Minutes)
 
-```
-Signal Engine fetches:
-+-- Drift API      --> funding rates, OI, volume
-+-- Coinglass      --> liquidation heatmap clusters
-+-- Pyth           --> oracle prices for SOL, BTC, ETH
-+-- Computed       --> Bollinger, RSI, VWAP, momentum
+```mermaid
+flowchart TD
+    subgraph Fetch["Phase 1: Data Collection"]
+        DriftAPI["Drift API\nfunding rates, OI, volume"]
+        CG["Coinglass\nliquidation heatmap"]
+        Pyth["Pyth\noracle prices"]
+        Computed["Computed\nBB, RSI, VWAP"]
+    end
 
-Feature engineer builds 17-feature vector
+    Fetch --> FE["Feature Engineer\n17-feature vector"]
+    FE --> Mom["Momentum Model x 0.4"]
+    FE --> Rev["Mean-Rev Model x 0.6"]
+    Mom --> Ensemble["Ensemble Signal\nrange: -1.0 to +1.0"]
+    Rev --> Ensemble
 
-XGBoost ensemble generates signal:
-+-- momentum_model.predict(features) x 0.4
-+-- meanrev_model.predict(features)  x 0.6
-    = combined signal in [-1.0, +1.0]
+    Ensemble --> Risk{"Risk Check\nDD < 3% | Health > 15\nDelta < 0.10 | Lev < 2x"}
 
-Keeper fetches signal via authenticated HTTP
-
-Pre-trade risk check:
-+-- Daily drawdown < 3%?
-+-- Monthly drawdown < 8%?
-+-- Drift health > 15?
-+-- Net delta < |0.10|?
-+-- Leverage < 2.0x?
-+-- Open positions < 3?
-
-If signal > 0.6 --> LONG:
-+-- Open long perp on Drift (Ed25519 attested)
-+-- Adjust vault allocation (more to Drift)
-+-- Monitor stop-loss (-0.5%) / take-profit (+1.5%)
-
-If signal < -0.6 --> SHORT:
-+-- Open short perp on Drift (Ed25519 attested)
-+-- Adjust vault allocation
-+-- Monitor stop-loss / take-profit
-
-If |signal| < 0.6 --> NEUTRAL:
-+-- Close any open positions
-+-- Shift allocation toward Kamino (more floor yield)
+    Risk -->|"signal > 0.6"| Long["LONG: Open perp on Drift\nAdjust allocation to Drift\nMonitor SL/TP"]
+    Risk -->|"signal < -0.6"| Short["SHORT: Open perp on Drift\nAdjust allocation\nMonitor SL/TP"]
+    Risk -->|"|signal| < 0.6"| Neutral["NEUTRAL: Close positions\nShift allocation to Kamino"]
 ```
 
 ---
@@ -833,34 +776,16 @@ If the keeper detects a risk breach, it automatically:
 
 ### Model Architecture
 
-```
-                    17 Features
-                        |
-              +---------+---------+
-              |                   |
-     +--------v--------+ +-------v--------+
-     |  MOMENTUM MODEL | |  MEAN-REV MODEL|
-     |  (XGBoost)      | |  (XGBoost)     |
-     |  Weight: 40%    | |  Weight: 60%   |
-     +--------+--------+ +-------+--------+
-              |                   |
-              +---------+---------+
-                        |
-              +---------v---------+
-              |  ENSEMBLE COMBINER|
-              |  signal = 0.4*mom |
-              |         + 0.6*rev |
-              |  + regime adjust  |
-              |  + confidence     |
-              +---------+---------+
-                        |
-                   signal in [-1, +1]
-                        |
-              +---------v---------+
-              | > +0.6 --> LONG   |
-              | < -0.6 --> SHORT  |
-              | else  --> NEUTRAL |
-              +-------------------+
+```mermaid
+graph TD
+    Features["17 Features"] --> Mom["Momentum Model\nXGBoost | Weight: 40%"]
+    Features --> Rev["Mean-Rev Model\nXGBoost | Weight: 60%"]
+    Mom --> Ensemble["Ensemble Combiner\nsignal = 0.4 x mom + 0.6 x rev\n+ regime adjustment + confidence"]
+    Rev --> Ensemble
+    Ensemble --> Signal["Signal in -1 to +1"]
+    Signal --> Long["> +0.6 --> LONG"]
+    Signal --> Short["< -0.6 --> SHORT"]
+    Signal --> Neutral["else --> NEUTRAL"]
 ```
 
 ### Training
@@ -886,48 +811,47 @@ python training/backtest.py \
 
 ### Keeper Loop Architecture
 
-```
-+-------------------------------------------------------------+
-|                    KEEPER MAIN LOOP (15 min)                  |
-|                                                               |
-|  1. Fetch signals for SOL, BTC, ETH from signal server       |
-|  2. Fetch Drift health state                                  |
-|  3. Check all risk limits (6 layers)                          |
-|  4. If risk breach --> emergency unwind                       |
-|  5. Check existing positions for stop-loss / take-profit      |
-|  6. For each asset with strong signal:                        |
-|     a. Compute position size (Kelly criterion)                |
-|     b. Build trade instruction                                |
-|     c. Sign with Ed25519 (AI attestation)                     |
-|     d. Send transaction with compute budget                   |
-|  7. Rebalance vault allocation (Kamino <--> Drift)            |
-|  8. Log metrics + send alerts                                 |
-+-------------------------------------------------------------+
+```mermaid
+flowchart TD
+    Start["Keeper Tick (every 15 min)"] --> S1["1. Fetch signals for SOL, BTC, ETH"]
+    S1 --> S2["2. Fetch Drift health state"]
+    S2 --> S3{"3. Check all risk limits (6 layers)"}
+    S3 -->|"Breach"| S4["4. Emergency unwind"]
+    S3 -->|"Pass"| S5["5. Check SL/TP on open positions"]
+    S5 --> S6["6. For each strong signal:\na. Kelly position size\nb. Build trade IX\nc. Ed25519 sign\nd. Send TX"]
+    S6 --> S7["7. Rebalance vault allocation"]
+    S7 --> S8["8. Log metrics + send alerts"]
+    S8 --> End["Wait 15 min"]
+    S4 --> End
 ```
 
 ### Ed25519 Attestation Flow
 
-```
-1. Keeper builds trade instruction
-         |
-2. Agent keypair signs the instruction data
-         | Ed25519 signature
-         |
-3. Transaction is constructed:
-   +-------------------------------------+
-   | TX Instructions:                    |
-   | [1] ComputeBudgetProgram (limit)    |
-   | [2] ComputeBudgetProgram (price)    |
-   | [3] Ed25519 VERIFY instruction  <-- | Proves AI agent authorized this
-   | [4] Drift place_perp_order      <-- | Actual trade
-   +-------------------------------------+
-         |
-4. Sent to Solana -- validators verify Ed25519
-         |
-5. If signature invalid --> TX rejected
-   If signature valid   --> trade executes
-         |
-6. Attestation logged for audit trail
+```mermaid
+sequenceDiagram
+    participant K as Keeper
+    participant A as Agent Keypair
+    participant TX as Transaction
+    participant V as Solana Validators
+    participant D as Drift Program
+
+    K->>K: Build trade instruction
+    K->>A: Sign instruction data
+    A-->>K: Ed25519 signature
+    K->>TX: Assemble transaction
+    Note over TX: ix[1] ComputeBudget (limit)
+    Note over TX: ix[2] ComputeBudget (price)
+    Note over TX: ix[3] Ed25519 VERIFY
+    Note over TX: ix[4] Drift placePerpOrder
+    TX->>V: Send to Solana
+    V->>V: Verify Ed25519 signature
+    alt Signature Valid
+        V->>D: Execute trade
+        D-->>K: txSig confirmed
+    else Signature Invalid
+        V-->>K: TX Rejected
+    end
+    K->>K: Log attestation record
 ```
 
 Anyone can verify on Solscan that every trade TX contains an `Ed25519SigVerify111111111111111111111111111` instruction.
