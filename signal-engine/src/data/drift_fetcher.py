@@ -6,8 +6,7 @@ Fetches funding rates, OI, volume, oracle prices from Drift API.
 import requests
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Optional
-from datetime import datetime, timedelta
+from typing import Dict, Optional
 from src.config import DRIFT_API_BASE, DRIFT_MARKET_MAP
 
 

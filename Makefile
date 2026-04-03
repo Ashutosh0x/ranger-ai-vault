@@ -113,10 +113,10 @@ train: ## Train XGBoost models
 
 backtest: ## Run walk-forward backtest
 	@echo "═══ Running Backtest ═══"
-	cd signal-engine && python training/backtest.py
+	cd signal-engine && python backtest/run_backtest.py
 	@echo ""
-	@echo "Results saved to tests/backtests/results/"
-	@cat tests/backtests/results/metrics_summary.json 2>/dev/null || echo "No results yet"
+	@echo "Results saved to signal-engine/backtest/results/"
+	@cat signal-engine/backtest/results/metrics_summary.json 2>/dev/null || echo "No results yet"
 
 # ═══ TESTING ═══
 
@@ -196,6 +196,51 @@ vault-positions: ## Query strategy positions
 vault-performance: ## Query vault performance
 	cd vault && npx ts-node src/scripts/query-performance.ts
 
+# ═══ PRODUCTION DOCKER ═══
+
+docker-prod-build: ## Build production Docker images
+	docker build -t ranger-signal:prod signal-engine/ -f signal-engine/Dockerfile.prod
+	docker build -t ranger-keeper:prod keeper/ -f keeper/Dockerfile.prod
+	docker build -t ranger-dashboard:prod dashboard/ -f dashboard/Dockerfile.prod
+	@echo "✅ All production images built"
+
+docker-prod-up: ## Start production stack
+	docker compose -f docker-compose.prod.yml up -d
+	@echo "✅ Production stack started"
+	@echo "  Signal:    http://localhost:8000"
+	@echo "  Dashboard: http://localhost:3000"
+	@echo "  Grafana:   http://localhost:3001"
+	@echo "  Prometheus: http://localhost:9090"
+
+docker-prod-down: ## Stop production stack
+	docker compose -f docker-compose.prod.yml down
+
+docker-prod-logs: ## View production logs
+	docker compose -f docker-compose.prod.yml logs -f
+
+# ═══ DEVNET HELPERS ═══
+
+airdrop: ## Airdrop devnet SOL to all wallets
+	@echo "Airdropping devnet SOL..."
+	solana airdrop 2 $$(solana-keygen pubkey vault/keys/admin.json) --url devnet || true
+	@sleep 3
+	solana airdrop 2 $$(solana-keygen pubkey vault/keys/manager.json) --url devnet || true
+	@sleep 3
+	solana airdrop 2 $$(solana-keygen pubkey keeper/keys/agent.json) --url devnet || true
+	@echo "✅ Airdrops complete"
+
+deploy-script: ## Run full devnet deployment script
+	bash scripts/deploy-devnet.sh
+
+keeper-dry: ## Dry run keeper (no transactions)
+	DRY_RUN=true cd keeper && npx ts-node src/index.ts
+
+health: ## Check health of all services
+	@bash scripts/health-check.sh
+
+register-secrets: ## Register GitHub secrets from .env
+	bash scripts/register-github-secrets.sh
+
 # ═══ UTILITIES ═══
 
 clean: ## Remove build artifacts
@@ -220,6 +265,6 @@ help: ## Show this help message
 	@echo "Ranger AI Vault — Available Commands"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-25s %s\n", $$1, $$2}'
 
 .DEFAULT_GOAL := help

@@ -8,7 +8,7 @@ import os
 import time
 import requests
 from typing import Dict, Optional, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -162,7 +162,7 @@ class CoinglassClient:
 
         for price_str, liq_entries in entries.items():
             try:
-                price = float(price_str)
+                _price = float(price_str)
             except (ValueError, TypeError):
                 continue
 

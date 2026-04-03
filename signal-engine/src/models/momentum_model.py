@@ -5,7 +5,7 @@ Momentum Model — XGBRegressor for 1h forward price momentum.
 import numpy as np
 import pandas as pd
 from xgboost import XGBRegressor
-from typing import Optional, Dict
+from typing import Dict
 from src.config import MODEL_PARAMS, FEATURE_COLUMNS
 
 

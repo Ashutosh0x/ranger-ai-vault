@@ -5,13 +5,13 @@ Signal = 0.4 * momentum + 0.6 * meanrev (mean-rev weighted heavier).
 
 import numpy as np
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict
 
 from src.models.momentum_model import MomentumModel
 from src.models.meanrev_model import MeanRevModel
 from src.models.model_registry import get_model_registry
 from src.features.feature_engineer import get_feature_engineer
-from src.config import MODEL_PARAMS, SIGNAL_THRESHOLDS
+from src.config import MODEL_PARAMS
 
 
 @dataclass

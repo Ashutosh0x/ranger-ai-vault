@@ -862,28 +862,48 @@ Anyone can verify on Solscan that every trade TX contains an `Ed25519SigVerify11
 
 ## Dashboard
 
+The dashboard is a production-grade Next.js 14 application with dark/light theme support, wallet integration, and real-time monitoring.
+
 ### Pages
 
 | Page | Description | Key Components |
 |------|-------------|----------------|
-| Overview | At-a-glance metrics | TVL, APY, NAV/LP, P&L cards + equity curve |
-| Vault | Deposit/withdraw | USDC deposit form, LP withdraw form |
-| Signals | Live AI signals | Per-asset signal strength, confidence, features |
-| Positions | Open trades | Position table, P&L chart, delta gauge |
-| Risk | Risk monitoring | Drawdown gauges, health chart, VaR display |
-| Backtest | Historical results | Equity curve, metrics cards, trade log |
-| Logs | Execution history | Trade log, attestation log, keeper activity |
+| Landing (`/`) | Marketing page with hero, performance stats, risk framework | Animated hero, live signal preview, CTA |
+| Docs (`/docs`) | Full documentation with search | Categorized docs grid, search, external links |
+| Overview (`/overview`) | At-a-glance metrics | TVL, APY, NAV/LP, equity curve, engine status |
+| Vault (`/vault`) | Deposit/withdraw USDC | Vault operations, LP token management |
+| Signals (`/signals`) | Live AI signals | Per-asset signal strength, confidence |
+| Positions (`/positions`) | Open trades | Position table, P&L, delta gauge |
+| Risk (`/risk`) | Risk monitoring | Drawdown gauges, health chart, VaR |
+| Backtest (`/backtest`) | Historical results | Equity curve, metrics cards, trade log |
+| Logs (`/logs`) | Execution history | Trade log, attestation log |
+| Settings (`/settings`) | API keys & preferences | Encrypted key management, theme toggle |
+| Analytics (`/analytics`) | Advanced analytics | Performance breakdown |
+| Leaderboard (`/leaderboard`) | Vault rankings | Comparative metrics |
+| Copy Trading (`/copy-trading`) | Follow strategies | Strategy follow system |
+| Profile (`/profile`) | User profile | Wallet details, activity |
+| Referrals (`/referrals`) | Referral program | Invite tracking |
+
+### Key Features
+
+- **🌓 Dark/Light Theme** — Global theme system with CSS variables, persisted in localStorage
+- **👛 Wallet Integration** — Solana Wallet Adapter (Phantom, Solflare, Coinbase, Ledger, + more)
+- **🔑 API Key Management** — Encrypted CRUD for 8 services (Signal Engine, Helius, Coinglass, Drift, Birdeye, Jupiter, Cobo MPC, Custom)
+- **🎯 TopBar Profile** — Connected wallet shows avatar, name, and address with dropdown menu
+- **⚡ Animations** — Page transitions, stagger grids, scale-on-hover, count-up counters via Framer Motion
+- **📱 Responsive** — Full mobile support with collapsible sidebar and mobile navigation
 
 ### Dashboard Tech Stack
 
 | Tool | Purpose |
 |------|---------|
 | Next.js 14 | App Router framework |
-| Tailwind CSS | Glassmorphism dark theme |
-| shadcn/ui | Component library |
-| Recharts | Charts and visualizations |
+| Tailwind CSS | Utility-first styling with CSS variable theming |
+| Framer Motion | Page transitions and micro-animations |
+| Lucide React | Professional icon library |
 | React Query | Data fetching with auto-refetch |
-| Solana Wallet Adapter | Wallet connection |
+| Solana Wallet Adapter | Multi-wallet connection |
+| Recharts | Charts and data visualizations |
 
 ---
 

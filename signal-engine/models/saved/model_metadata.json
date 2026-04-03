@@ -1,0 +1,26 @@
+{
+  "momentum": {
+    "version": "v1",
+    "filename": "momentum_v1.joblib",
+    "trained_at": "2026-04-03T19:12:20.494738",
+    "metrics": {
+      "rmse": 0.008249535442198514,
+      "correlation": 0.7650454207540294,
+      "n_samples": 800,
+      "test_rmse": 0.010202674880306762,
+      "test_correlation": -0.12709217476585974
+    }
+  },
+  "meanrev": {
+    "version": "v1",
+    "filename": "meanrev_v1.joblib",
+    "trained_at": "2026-04-03T19:12:20.510294",
+    "metrics": {
+      "rmse": 0.008084455097808278,
+      "correlation": 0.7291965004556605,
+      "n_samples": 800,
+      "test_rmse": 0.010119284492598054,
+      "test_correlation": 0.02231975734231204
+    }
+  }
+}

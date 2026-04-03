@@ -3,9 +3,7 @@ Technical Indicators
 Bollinger Bands, RSI, VWAP, ATR — used as ML features.
 """
 
-import numpy as np
 import pandas as pd
-from typing import Optional
 
 
 def bollinger_bands(

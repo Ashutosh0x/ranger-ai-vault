@@ -1,0 +1,70 @@
+name: 🔍 Validate Repo Structure
+
+on:
+  workflow_call:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate required files exist
+        run: |
+          REQUIRED=(
+            "README.md"
+            "docs/ATTESTATION.md"
+            "docs/RISK-FRAMEWORK.md"
+            "docs/SIGNAL-ENGINE.md"
+            "docker-compose.yml"
+            "Makefile"
+            ".env.example"
+            "signal-engine/requirements.txt"
+            "keeper/package.json"
+            "dashboard/package.json"
+            "submission/wallet-addresses.md"
+            "submission/strategy-doc.md"
+          )
+          FAILED=0
+          for f in "${REQUIRED[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "❌ MISSING: $f"
+              FAILED=1
+            else
+              echo "✅ EXISTS: $f"
+            fi
+          done
+          exit $FAILED
+
+      - name: Check no FILL_AFTER_DEPLOY placeholders remain
+        run: |
+          COUNT=$(grep -r "FILL_AFTER_DEPLOY" --include="*.md" --include="*.ts" --include="*.py" . | wc -l)
+          if [ "$COUNT" -gt "0" ]; then
+            echo "⚠️ Found $COUNT unfilled placeholders:"
+            grep -r "FILL_AFTER_DEPLOY" --include="*.md" --include="*.ts" .
+            echo "These must be filled before submission"
+          else
+            echo "✅ No unfilled placeholders"
+          fi
+
+      - name: Verify 17 features in config
+        run: |
+          FEATURES=$(grep -c '"[a-z_]*"' signal-engine/src/config.py | head -1 || echo "0")
+          echo "Feature count in FEATURE_COLUMNS: checking..."
+          if grep -q "rsi_14" signal-engine/src/config.py && grep -q "vwap_deviation" signal-engine/src/config.py; then
+            echo "✅ RSI and VWAP features present"
+          else
+            echo "❌ RSI and/or VWAP features missing from FEATURE_COLUMNS"
+            exit 1
+          fi
+
+      - name: Validate vault scripts count
+        run: |
+          COUNT=$(ls vault/src/scripts/*.ts 2>/dev/null | wc -l)
+          echo "Vault scripts found: $COUNT"
+          if [ "$COUNT" -lt "15" ]; then
+            echo "⚠️ Expected 15+ vault scripts, found $COUNT"
+          else
+            echo "✅ All vault scripts present"
+          fi

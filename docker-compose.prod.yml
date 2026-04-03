@@ -1,0 +1,143 @@
+version: '3.9'
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+x-restart: &always-restart
+  restart: always
+
+services:
+
+  # ── Signal Engine ──────────────────────────────────────
+  signal-engine:
+    build:
+      context: ./signal-engine
+      dockerfile: Dockerfile.prod
+    container_name: ranger-signal
+    <<: *always-restart
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - signal-models:/app/models/saved
+      - signal-logs:/app/logs
+    networks:
+      - ranger-net
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── Keeper Bot ─────────────────────────────────────────
+  keeper:
+    build:
+      context: ./keeper
+      dockerfile: Dockerfile.prod
+    container_name: ranger-keeper
+    <<: *always-restart
+    depends_on:
+      signal-engine:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - SIGNAL_SERVER_URL=http://signal-engine:8000
+    volumes:
+      - keeper-logs:/app/logs
+      - ./keys:/app/keys:ro
+    networks:
+      - ranger-net
+    logging: *default-logging
+
+  # ── Dashboard ──────────────────────────────────────────
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile.prod
+    container_name: ranger-dashboard
+    <<: *always-restart
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_SIGNAL_URL=http://signal-engine:8000
+    networks:
+      - ranger-net
+    logging: *default-logging
+
+  # ── Nginx Reverse Proxy ────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: ranger-nginx
+    <<: *always-restart
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - signal-engine
+      - dashboard
+    networks:
+      - ranger-net
+    logging: *default-logging
+
+  # ── Redis (caching + pub/sub) ─────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: ranger-redis
+    <<: *always-restart
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - ranger-net
+    logging: *default-logging
+
+  # ── Prometheus ─────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ranger-prometheus
+    <<: *always-restart
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - ranger-net
+
+  # ── Grafana ────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ranger-grafana
+    <<: *always-restart
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-changeme}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    networks:
+      - ranger-net
+
+volumes:
+  signal-models:
+  signal-logs:
+  keeper-logs:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  ranger-net:
+    driver: bridge

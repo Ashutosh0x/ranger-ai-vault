@@ -1,0 +1,102 @@
+name: 🔴 CD — Deploy to Mainnet
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DEPLOY_MAINNET to confirm'
+        required: true
+      version:
+        description: 'Git tag/SHA to deploy'
+        required: true
+
+jobs:
+  pre-flight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "DEPLOY_MAINNET" ]; then
+            echo "❌ Confirmation text incorrect. Aborting."
+            exit 1
+          fi
+          echo "✅ Mainnet deployment confirmed"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - name: Verify CI passed
+        run: |
+          gh run list \
+            --commit ${{ github.event.inputs.version }} \
+            --workflow ci-main.yml \
+            --status success \
+            --limit 1 | grep -q "completed" || {
+              echo "❌ CI not passed on this version"
+              exit 1
+            }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-mainnet:
+    name: Deploy to Mainnet
+    runs-on: ubuntu-latest
+    needs: pre-flight
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vault/package-lock.json
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v2.0.3/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Restore keypairs
+        run: |
+          echo "${{ secrets.MAINNET_ADMIN_KEYPAIR }}" | \
+            python3 -c "import sys,json,base58; d=sys.stdin.read().strip(); print(json.dumps(list(base58.b58decode(d))))" \
+            > /tmp/admin.json
+          echo "${{ secrets.MAINNET_MANAGER_KEYPAIR }}" | \
+            python3 -c "import sys,json,base58; d=sys.stdin.read().strip(); print(json.dumps(list(base58.b58decode(d))))" \
+            > /tmp/manager.json
+
+      - name: Install vault deps
+        run: cd vault && npm ci
+
+      - name: Deploy vault scripts
+        run: |
+          cd vault
+          npx ts-node scripts/admin-init-vault.ts && sleep 5
+          npx ts-node scripts/admin-add-adaptors.ts && sleep 3
+          npx ts-node scripts/admin-init-strategies.ts && sleep 3
+          npx ts-node scripts/admin-add-lp-metadata.ts && sleep 3
+          npx ts-node scripts/admin-init-direct-withdraw.ts && sleep 3
+          npx ts-node scripts/admin-update-config.ts
+        env:
+          HELIUS_RPC_URL: https://mainnet.helius-rpc.com/?api-key=${{ secrets.HELIUS_API_KEY }}
+          ADMIN_KEYPAIR_PATH: /tmp/admin.json
+          MANAGER_KEYPAIR_PATH: /tmp/manager.json
+          SOLANA_CLUSTER: mainnet-beta
+
+      - name: Notify Telegram
+        if: always()
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="🚀 MAINNET DEPLOY — SHA: ${{ github.sha }} — Status: ${{ job.status }}"
+
+      - name: Clean up keys
+        if: always()
+        run: rm -f /tmp/admin.json /tmp/manager.json

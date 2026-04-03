@@ -1,0 +1,23 @@
+{
+  "total_trades": 0,
+  "win_rate": 0,
+  "avg_win": 0,
+  "avg_loss": 0,
+  "total_pnl_usd": 0,
+  "sharpe_ratio": 0,
+  "max_drawdown": 0,
+  "profit_factor": 0,
+  "annualized_return": 0,
+  "initial_capital": 1000000,
+  "final_equity": 1000000,
+  "total_return_pct": 0,
+  "avg_hold_periods": 0,
+  "equity_curve_raw": [],
+  "generated_at": "2026-04-03T14:04:12.106223Z",
+  "assets": [
+    "SOL-PERP",
+    "BTC-PERP",
+    "ETH-PERP"
+  ],
+  "walk_forward": true
+}

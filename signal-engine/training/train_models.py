@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.data.drift_fetcher import get_drift_fetcher
 from src.features.feature_engineer import get_feature_engineer
-from src.features.indicators import bollinger_bands, price_momentum
+from src.features.indicators import bollinger_bands, price_momentum, rsi, vwap
 from src.models.momentum_model import MomentumModel
 from src.models.meanrev_model import MeanRevModel
 from src.models.model_registry import get_model_registry
@@ -51,6 +51,19 @@ def engineer_features(ohlcv: pd.DataFrame) -> pd.DataFrame:
         row["price_momentum_1h"] = price_momentum(window, 4)
         bb = bollinger_bands(window, 20)
         row["bollinger_zscore"] = bb["zscore"]
+
+        # RSI-14
+        row["rsi_14"] = rsi(window, window=14) if len(window) >= 15 else 50.0
+
+        # VWAP deviation
+        if all(col in ohlcv.columns for col in ["high", "low", "volume"]):
+            h = ohlcv["high"].iloc[:i + 1]
+            l = ohlcv["low"].iloc[:i + 1]
+            v = ohlcv["volume"].iloc[:i + 1]
+            vwap_val = vwap(h, l, window, v)
+            row["vwap_deviation"] = (window.iloc[-1] - vwap_val) / vwap_val if vwap_val > 0 else 0.0
+        else:
+            row["vwap_deviation"] = 0.0
 
         # Market features (simplified for training)
         row["funding_rate_1h"] = 0.0

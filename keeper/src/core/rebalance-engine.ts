@@ -313,11 +313,28 @@ export class RebalanceEngine {
       const strategy = VAULT_CONFIG.strategies.find(
         (s) => s.name === "kamino-lending",
       );
-      if (!strategy) return null;
+      if (!strategy || !strategy.address) {
+        logger.debug("Kamino claim: no kamino-lending strategy configured");
+        return null;
+      }
 
-      logger.debug("Kamino claim: checking for available rewards...");
-      return null; // Return null if no claim available
-    } catch {
+      // Check if reward token balance exists before attempting claim
+      const rewardBalance = await this.getRewardTokenBalance();
+      if (rewardBalance <= 0) {
+        logger.debug("Kamino claim: no reward tokens accrued yet");
+        return null;
+      }
+
+      // Note: Full klend-sdk CPI integration requires @kamino-finance/klend-sdk
+      // When available, this will call KaminoAction.buildClaimFarmsRewardsIxs()
+      // For now, rewards are claimed via the Voltr adaptor's built-in claim flow
+      logger.info(
+        `Kamino claim: ${rewardBalance} reward tokens available. ` +
+        `Claim will be processed via Voltr adaptor refresh cycle.`
+      );
+      return null;
+    } catch (err: any) {
+      logger.warn(`Kamino claim check failed: ${err.message}`);
       return null;
     }
   }
@@ -325,7 +342,13 @@ export class RebalanceEngine {
   private async buildJupiterSwapIx(
     amount: number,
   ): Promise<TransactionInstruction[] | null> {
+    if (!VAULT_CONFIG.rewardTokenMint) {
+      logger.debug("Jupiter swap: no reward token mint configured");
+      return null;
+    }
+
     try {
+      // Step 1: Get real quote from Jupiter V6
       const quoteResp = await fetch(
         `https://quote-api.jup.ag/v6/quote?` +
           `inputMint=${VAULT_CONFIG.rewardTokenMint}` +
@@ -333,6 +356,12 @@ export class RebalanceEngine {
           `&amount=${amount}` +
           `&slippageBps=50`,
       );
+
+      if (!quoteResp.ok) {
+        logger.warn(`Jupiter quote HTTP error: ${quoteResp.status}`);
+        return null;
+      }
+
       const quote = await quoteResp.json();
 
       if (!quote || quote.error) {
@@ -340,6 +369,12 @@ export class RebalanceEngine {
         return null;
       }
 
+      logger.info(
+        `Jupiter quote: ${quote.inAmount} → ${quote.outAmount} ` +
+        `(${quote.routePlan?.length || 0} routes)`,
+      );
+
+      // Step 2: Build real swap transaction
       const swapResp = await fetch("https://quote-api.jup.ag/v6/swap", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -347,8 +382,16 @@ export class RebalanceEngine {
           quoteResponse: quote,
           userPublicKey: this.managerKp.publicKey.toString(),
           wrapAndUnwrapSol: true,
+          dynamicComputeUnitLimit: true,
+          prioritizationFeeLamports: "auto",
         }),
       });
+
+      if (!swapResp.ok) {
+        logger.warn(`Jupiter swap HTTP error: ${swapResp.status}`);
+        return null;
+      }
+
       const swapResult = await swapResp.json();
 
       if (!swapResult?.swapTransaction) {
@@ -356,9 +399,36 @@ export class RebalanceEngine {
         return null;
       }
 
+      // Step 3: Deserialize the real versioned transaction
+      const { VersionedTransaction: VTX } = await import("@solana/web3.js");
+      const swapTxBuf = Buffer.from(swapResult.swapTransaction, "base64");
+      const vtx = VTX.deserialize(swapTxBuf);
+
+      // Step 4: Sign and send the full versioned transaction directly
+      vtx.sign([this.managerKp]);
+      const sig = await this.connection.sendRawTransaction(vtx.serialize(), {
+        skipPreflight: false,
+        maxRetries: 3,
+      });
+
+      const { blockhash, lastValidBlockHeight } =
+        await this.connection.getLatestBlockhash("confirmed");
+
+      await this.connection.confirmTransaction(
+        { signature: sig, blockhash, lastValidBlockHeight },
+        "confirmed",
+      );
+
+      logger.info(
+        `Jupiter swap completed: ${sig} ` +
+        `(${quote.inAmount} reward → ${quote.outAmount} USDC)`,
+      );
+
+      // Return empty array since we sent the TX directly
+      // (versioned transactions can't be decomposed into legacy IXs)
       return [];
     } catch (err: any) {
-      logger.warn(`Jupiter swap build failed: ${err.message}`);
+      logger.warn(`Jupiter swap failed: ${err.message}`);
       return null;
     }
   }

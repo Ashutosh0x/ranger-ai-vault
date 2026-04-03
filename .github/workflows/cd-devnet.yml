@@ -1,0 +1,115 @@
+name: 🚀 CD — Deploy to Devnet
+
+on:
+  push:
+    branches: [devnet]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-devnet
+  cancel-in-progress: false
+
+jobs:
+  deploy-vault:
+    name: Deploy Vault (Devnet)
+    runs-on: ubuntu-latest
+    environment:
+      name: devnet
+      url: https://solscan.io/account/${{ vars.DEVNET_VAULT_ADDRESS }}?cluster=devnet
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vault/package-lock.json
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v2.0.3/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Validate secrets
+        run: |
+          if [ -z "${{ secrets.HELIUS_API_KEY }}" ]; then
+            echo "❌ HELIUS_API_KEY not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.DEVNET_ADMIN_KEYPAIR }}" ]; then
+            echo "❌ DEVNET_ADMIN_KEYPAIR not set"
+            exit 1
+          fi
+          echo "✅ All required secrets present"
+
+      - name: Configure Solana CLI
+        run: |
+          solana config set --url https://devnet.helius-rpc.com/?api-key=${{ secrets.HELIUS_API_KEY }}
+          echo "${{ secrets.DEVNET_ADMIN_KEYPAIR }}" | \
+            python3 -c "import sys,json,base58; data=sys.stdin.read().strip(); print(json.dumps(list(base58.b58decode(data))))" \
+            > /tmp/admin.json
+          solana config set --keypair /tmp/admin.json
+          solana balance
+
+      - name: Install vault deps
+        run: cd vault && npm ci
+
+      - name: Fund wallets (devnet airdrop)
+        run: |
+          ADMIN_ADDR=$(solana-keygen pubkey /tmp/admin.json)
+          solana airdrop 2 $ADMIN_ADDR --url devnet || true
+          sleep 3
+          solana balance $ADMIN_ADDR
+
+      - name: Restore manager keypair
+        run: |
+          echo "${{ secrets.DEVNET_MANAGER_KEYPAIR }}" | \
+            python3 -c "import sys,json,base58; d=sys.stdin.read().strip(); print(json.dumps(list(base58.b58decode(d))))" \
+            > /tmp/manager.json
+
+      - name: Deploy vault scripts
+        run: |
+          cd vault
+          npx ts-node scripts/admin-init-vault.ts && sleep 5
+          npx ts-node scripts/admin-add-adaptors.ts && sleep 3
+          npx ts-node scripts/admin-init-strategies.ts && sleep 3
+          npx ts-node scripts/admin-add-lp-metadata.ts && sleep 3
+          npx ts-node scripts/admin-init-direct-withdraw.ts && sleep 3
+          npx ts-node scripts/admin-update-config.ts
+        env:
+          HELIUS_RPC_URL: https://devnet.helius-rpc.com/?api-key=${{ secrets.HELIUS_API_KEY }}
+          ADMIN_KEYPAIR_PATH: /tmp/admin.json
+          MANAGER_KEYPAIR_PATH: /tmp/manager.json
+          SOLANA_CLUSTER: devnet
+
+      - name: Query vault state
+        run: |
+          cd vault
+          npx ts-node scripts/query-vault-state.ts | tee /tmp/vault-state.json
+
+      - name: Clean up keys
+        if: always()
+        run: rm -f /tmp/admin.json /tmp/manager.json /tmp/agent.json
+
+  deploy-signal-engine:
+    name: Deploy Signal Engine Container
+    runs-on: ubuntu-latest
+    needs: deploy-vault
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push signal engine
+        uses: docker/build-push-action@v5
+        with:
+          context: ./signal-engine
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/signal-engine:devnet
+            ghcr.io/${{ github.repository }}/signal-engine:${{ github.sha }}

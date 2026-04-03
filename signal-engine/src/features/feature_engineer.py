@@ -12,6 +12,8 @@ from src.data.pyth_fetcher import get_pyth_fetcher
 from src.features.indicators import (
     bollinger_bands,
     price_momentum,
+    rsi,
+    vwap,
 )
 from src.features.liquidation_features import get_liquidation_features
 from src.config import FEATURE_COLUMNS
@@ -26,7 +28,7 @@ class FeatureEngineer:
 
     def compute_features(self, asset: str) -> Dict[str, float]:
         """
-        Compute the full feature vector for an asset.
+        Compute the full 17-feature vector for an asset.
         Returns a dict matching FEATURE_COLUMNS.
         """
         features: Dict[str, float] = {}
@@ -53,16 +55,28 @@ class FeatureEngineer:
             close_prices = ohlcv["close"]
 
             # Momentum
-            features["price_momentum_15m"] = price_momentum(close_prices, periods=1)  # ~15min candle
-            features["price_momentum_1h"] = price_momentum(close_prices, periods=4)   # 4x15min
+            features["price_momentum_15m"] = price_momentum(close_prices, periods=1)
+            features["price_momentum_1h"] = price_momentum(close_prices, periods=4)
 
             # Bollinger z-score
             bb = bollinger_bands(close_prices, window=20)
             features["bollinger_zscore"] = bb["zscore"]
+
+            # RSI-14
+            features["rsi_14"] = rsi(close_prices, window=14)
+
+            # VWAP deviation
+            if all(col in ohlcv.columns for col in ["high", "low", "volume"]):
+                vwap_val = vwap(ohlcv["high"], ohlcv["low"], close_prices, ohlcv["volume"])
+                features["vwap_deviation"] = (close_prices.iloc[-1] - vwap_val) / vwap_val if vwap_val > 0 else 0.0
+            else:
+                features["vwap_deviation"] = 0.0
         else:
             features["price_momentum_15m"] = 0.0
             features["price_momentum_1h"] = 0.0
             features["bollinger_zscore"] = 0.0
+            features["rsi_14"] = 50.0
+            features["vwap_deviation"] = 0.0
 
         # 5. Basis spread (mark - oracle)
         features["basis_spread"] = self.drift.compute_basis_spread(asset)
@@ -101,6 +115,7 @@ class FeatureEngineer:
             return pd.DataFrame(columns=FEATURE_COLUMNS)
 
         close = ohlcv_df["close"]
+        has_hlv = all(col in ohlcv_df.columns for col in ["high", "low", "volume"])
         records = []
 
         for i in range(20, len(ohlcv_df)):  # Need 20 period lookback for BB
@@ -114,6 +129,19 @@ class FeatureEngineer:
             # Bollinger
             bb = bollinger_bands(window, 20)
             row["bollinger_zscore"] = bb["zscore"]
+
+            # RSI-14
+            row["rsi_14"] = rsi(window, window=14) if len(window) >= 15 else 50.0
+
+            # VWAP deviation
+            if has_hlv:
+                h = ohlcv_df["high"].iloc[:i + 1]
+                l = ohlcv_df["low"].iloc[:i + 1]
+                v = ohlcv_df["volume"].iloc[:i + 1]
+                vwap_val = vwap(h, l, window, v)
+                row["vwap_deviation"] = (window.iloc[-1] - vwap_val) / vwap_val if vwap_val > 0 else 0.0
+            else:
+                row["vwap_deviation"] = 0.0
 
             # Basis, funding — use placeholders for batch training
             row["funding_rate_1h"] = 0.0

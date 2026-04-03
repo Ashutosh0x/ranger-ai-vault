@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -19,12 +20,14 @@ module.exports = {
           900: "#0b4970",
         },
         vault: {
-          bg: "#0A0F1A",
-          card: "#111827",
-          border: "#1F2937",
-          accent: "#06D6A0",
-          warning: "#FFD166",
-          danger: "#EF476F",
+          bg: "var(--vault-bg)",
+          card: "var(--vault-card)",
+          border: "var(--vault-border)",
+          accent: "var(--vault-accent)",
+          warning: "var(--vault-warning)",
+          danger: "var(--vault-danger)",
+          text: "var(--vault-text)",
+          "text-secondary": "var(--vault-text-secondary)",
         },
       },
       backgroundImage: {

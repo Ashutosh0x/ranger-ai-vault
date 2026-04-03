@@ -63,6 +63,9 @@ FEATURE_COLUMNS = [
     "price_momentum_1h",
     "bollinger_zscore",
     "basis_spread",
+    # Technical indicators
+    "rsi_14",
+    "vwap_deviation",
     # Coinglass liquidation-derived (KEY DIFFERENTIATOR)
     "liq_nearest_long_dist",
     "liq_nearest_short_dist",
