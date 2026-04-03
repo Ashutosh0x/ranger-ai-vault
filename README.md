@@ -7,10 +7,11 @@
 [![CI Pipeline](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-main.yml/badge.svg)](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-main.yml)
 [![Signal Engine](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-signal-engine.yml/badge.svg)](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-signal-engine.yml)
 [![Keeper Bot](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-keeper.yml/badge.svg)](https://github.com/Ashutosh0x/ranger-ai-vault/actions/workflows/ci-keeper.yml)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Ashutosh0x/ranger-ai-vault&root-directory=dashboard)
 
 **Ranger Build-A-Bear Hackathon — Main Track Submission**
 
-[Live Vault](https://app.ranger.finance/vaults/VAULT_ADDRESS) · [Strategy Doc](./submission/strategy-doc.md) · [Architecture](./docs/ARCHITECTURE.md) · [Demo Video](https://your-demo-link.com)
+[Live Dashboard](https://ranger-ai-vault.vercel.app) · [Strategy Doc](./submission/strategy-doc.md) · [Architecture](./docs/ARCHITECTURE.md) · [Deployment Guide](./docs/DEPLOYMENT.md)
 
 </div>
 
@@ -57,6 +58,7 @@
 - [Quick Start](#quick-start)
 - [Detailed Setup](#detailed-setup)
 - [Docker Deployment](#docker-deployment)
+- [Vercel Deployment](#vercel-deployment)
 - [Testing](#testing)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Vault Operations Guide](#vault-operations-guide)
@@ -459,6 +461,7 @@ ranger-ai-vault/                    143 files across 4 packages
 +-- docs/                           Project documentation
 |   +-- ARCHITECTURE.md             System architecture with 18 Mermaid diagrams
 |   +-- SETUP.md                    Detailed setup guide
+|   +-- DEPLOYMENT.md               Vercel, Docker, and CI/CD deployment guide
 |   +-- RISK-FRAMEWORK.md           Risk management documentation
 |   +-- SIGNAL-ENGINE.md            ML model documentation
 |   +-- ATTESTATION.md              Ed25519 attestation explanation
@@ -639,6 +642,61 @@ Three services:
 - `signal-engine` (port 8080) — Python FastAPI signal server
 - `keeper` — TypeScript keeper bot (depends on signal-engine)
 - `dashboard` (port 3000) — Next.js UI (depends on signal-engine)
+
+---
+
+## Vercel Deployment
+
+The dashboard is hosted on [Vercel](https://vercel.com) for production with automatic deployments on every push to `main`.
+
+### Quick Deploy
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Authenticate
+vercel login
+
+# Deploy from dashboard directory
+cd dashboard
+vercel --prod
+```
+
+### Vercel Project Settings
+
+| Setting | Value |
+|---------|-------|
+| Framework | Next.js |
+| Root Directory | `dashboard` |
+| Build Command | `npm run build` |
+| Output Directory | `.next` |
+| Node.js Version | 18.x |
+
+### Environment Variables (Vercel)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_HELIUS_RPC_URL` | Yes | Helius or Solana RPC endpoint |
+| `NEXT_PUBLIC_VAULT_ADDRESS` | Yes | On-chain vault public key |
+| `NEXT_PUBLIC_SIGNAL_ENGINE_URL` | No | Signal engine API URL |
+| `NEXT_PUBLIC_SOLANA_NETWORK` | No | `devnet` or `mainnet-beta` |
+
+### Auto-Deploy via GitHub
+
+Once linked, Vercel automatically deploys:
+- **Production** — every push to `main`
+- **Preview** — every pull request
+
+```bash
+# Link repo to Vercel
+vercel link
+
+# Push to deploy
+git push origin main
+```
+
+> **Full deployment documentation:** [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
 
 ---
 
