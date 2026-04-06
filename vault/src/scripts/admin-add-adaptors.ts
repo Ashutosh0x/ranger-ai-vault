@@ -39,6 +39,7 @@ async function main() {
 
   const addZetaAdaptorIx = await client.createAddAdaptorIx({
     vault,
+    payer: adminKp.publicKey,
     admin: adminKp.publicKey,
     adaptorProgram: ZETA_ADAPTOR_PROGRAM_ID,
   });
@@ -57,6 +58,7 @@ async function main() {
 
   const addKaminoAdaptorIx = await client.createAddAdaptorIx({
     vault,
+    payer: adminKp.publicKey,
     admin: adminKp.publicKey,
     adaptorProgram: KAMINO_ADAPTOR_PROGRAM_ID,
   });

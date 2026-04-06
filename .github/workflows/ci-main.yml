@@ -1,7 +1,7 @@
 # .github/workflows/ci-main.yml
 # Runs on every push and PR — orchestrates all sub-workflows
 
-name: "🏗️ CI — Full Pipeline"
+name: "CI - Full Pipeline"
 
 on:
   push:
@@ -20,26 +20,26 @@ env:
   SOLANA_VERSION: "1.18.17"
 
 jobs:
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
   # STAGE 1: VALIDATE (runs first, fast-fail)
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
 
   validate-structure:
-    name: "📁 Validate Project Structure"
+    name: "Validate Project Structure"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Check required files exist
         run: |
-          echo "═══ Checking critical files ═══"
+          echo "=== Checking critical files ==="
           MISSING=0
 
           check_file() {
             if [ -f "$1" ]; then
-              echo "✅ $1"
+              echo "[PASS] $1"
             else
-              echo "❌ MISSING: $1"
+              echo "[FAIL] MISSING: $1"
               MISSING=$((MISSING + 1))
             fi
           }
@@ -120,9 +120,9 @@ jobs:
           # Check for dashboard pages in either app/ or src/app/
           for page in page.tsx layout.tsx globals.css; do
             if [ -f "dashboard/app/$page" ] || [ -f "dashboard/src/app/$page" ]; then
-              echo "✅ dashboard/$page"
+              echo "[PASS] dashboard/$page"
             else
-              echo "❌ MISSING: dashboard/$page"
+              echo "[FAIL] MISSING: dashboard/$page"
               MISSING=$((MISSING + 1))
             fi
           done
@@ -136,22 +136,22 @@ jobs:
           check_file "infra/docker/docker-compose.yml"
 
           echo ""
-          echo "═══════════════════════════════════"
+          echo "====================================="
           TOTAL_CHECKED=$(find . -type f -not -path './.git/*' -not -path '*/node_modules/*' -not -path '*/__pycache__/*' -not -path '*/venv/*' -not -path '*/.next/*' | wc -l)
           echo "Total files in repo: $TOTAL_CHECKED"
           echo "Missing critical files: $MISSING"
-          echo "═══════════════════════════════════"
+          echo "====================================="
 
           if [ $MISSING -gt 0 ]; then
             echo ""
-            echo "⚠️ $MISSING critical files missing — review above"
+            echo "[WARN] $MISSING critical files missing -- review above"
             exit 1
           fi
 
-          echo "✅ All critical files present"
+          echo "[PASS] All critical files present"
 
   validate-env-template:
-    name: "🔐 Validate ENV Template"
+    name: "Validate ENV Template"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,97 +169,95 @@ jobs:
 
           for var in "${REQUIRED_VARS[@]}"; do
             if grep -q "$var" .env.example; then
-              echo "✅ $var found in .env.example"
+              echo "[PASS] $var found in .env.example"
             else
-              echo "❌ $var MISSING from .env.example"
+              echo "[FAIL] $var MISSING from .env.example"
               exit 1
             fi
           done
 
   security-audit:
-    name: "🔒 Zero-Trust Security Scan"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Snyk / NPM Audit for Supply Chain Attacks
-        run: |
-          echo "Scanning keeper dependencies..."
-          cd keeper && npm audit --audit-level=high || true
-          echo "Scanning dashboard dependencies..."
-          cd dashboard && npm audit --audit-level=high || true
+    name: "Security Audit Pipeline"
+    uses: ./.github/workflows/security-audit.yml
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      pull-requests: write
+    secrets: inherit
 
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
   # STAGE 2: BUILD + LINT (parallel)
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
 
   signal-engine:
-    name: "🐍 Signal Engine"
+    name: "Signal Engine"
     needs: [validate-structure]
     uses: ./.github/workflows/ci-signal-engine.yml
     secrets: inherit
 
   keeper:
-    name: "🤖 Keeper Bot"
+    name: "Keeper Bot"
     needs: [validate-structure]
     uses: ./.github/workflows/ci-keeper.yml
     secrets: inherit
 
   vault:
-    name: "🏦 Vault Scripts"
+    name: "Vault Scripts"
     needs: [validate-structure]
     uses: ./.github/workflows/ci-vault.yml
     secrets: inherit
 
   dashboard:
-    name: "🖥️ Dashboard"
+    name: "Dashboard"
     needs: [validate-structure]
     uses: ./.github/workflows/ci-dashboard.yml
     secrets: inherit
 
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
   # STAGE 3: INTEGRATION (after all packages pass)
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
 
   integration:
-    name: "🔗 Integration Tests"
+    name: "Integration Tests"
     needs: [signal-engine, keeper, vault, dashboard]
     uses: ./.github/workflows/ci-integration.yml
     secrets: inherit
 
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
   # STAGE 4: BACKTEST (after integration passes)
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
 
   backtest:
-    name: "📊 Backtest + Artifacts"
+    name: "Backtest + Artifacts"
     needs: [integration]
     uses: ./.github/workflows/ci-backtest.yml
     secrets: inherit
 
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
   # STAGE 5: FINAL SUMMARY
-  # ═══════════════════════════════════════════════════════
+  # ==========================================================
 
   summary:
-    name: "📋 CI Summary"
+    name: "CI Summary"
     needs: [validate-structure, validate-env-template, signal-engine, keeper, vault, dashboard, integration, backtest]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Generate Summary
         run: |
-          echo "## 🏗️ Ranger AI Vault — CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "## Ranger AI Vault -- CI Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 📁 Structure | ${{ needs.validate-structure.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔐 ENV Template | ${{ needs.validate-env-template.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🐍 Signal Engine | ${{ needs.signal-engine.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🤖 Keeper Bot | ${{ needs.keeper.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏦 Vault Scripts | ${{ needs.vault.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🖥️ Dashboard | ${{ needs.dashboard.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔗 Integration | ${{ needs.integration.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📊 Backtest | ${{ needs.backtest.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Structure | ${{ needs.validate-structure.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ENV Template | ${{ needs.validate-env-template.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Signal Engine | ${{ needs.signal-engine.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Keeper Bot | ${{ needs.keeper.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Vault Scripts | ${{ needs.vault.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dashboard | ${{ needs.dashboard.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration | ${{ needs.integration.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backtest | ${{ needs.backtest.result == 'success' && 'PASS' || 'FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ needs.validate-structure.result }}" = "success" ] && \
@@ -269,8 +267,8 @@ jobs:
              [ "${{ needs.dashboard.result }}" = "success" ] && \
              [ "${{ needs.integration.result }}" = "success" ] && \
              [ "${{ needs.backtest.result }}" = "success" ]; then
-            echo "### ✅ ALL CHECKS PASSED — Ready for submission" >> $GITHUB_STEP_SUMMARY
+            echo "### ALL CHECKS PASSED -- Ready for submission" >> $GITHUB_STEP_SUMMARY
           else
-            echo "### ❌ SOME CHECKS FAILED — Fix before submitting" >> $GITHUB_STEP_SUMMARY
+            echo "### SOME CHECKS FAILED -- Fix before submitting" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi

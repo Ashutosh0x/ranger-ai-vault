@@ -20,27 +20,27 @@
 ### Tech Stack
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Solana-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana" />
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/XGBoost-FF6600?style=for-the-badge&logo=xgboost&logoColor=white" alt="XGBoost" />
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest" />
-  <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest" />
-  <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions" />
+ <img src="https://img.shields.io/badge/Solana-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana" />
+ <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+ <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+ <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+ <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+ <img src="https://img.shields.io/badge/XGBoost-FF6600?style=for-the-badge&logo=xgboost&logoColor=white" alt="XGBoost" />
+ <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+ <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest" />
+ <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest" />
+ <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Zeta_Protocol-6366F1?style=flat-square" alt="Zeta Markets" />
-  <img src="https://img.shields.io/badge/Kamino_Finance-22C55E?style=flat-square" alt="Kamino Finance" />
-  <img src="https://img.shields.io/badge/Jupiter_Aggregator-FFA500?style=flat-square" alt="Jupiter" />
-  <img src="https://img.shields.io/badge/Pyth_Network-7C3AED?style=flat-square" alt="Pyth Network" />
-  <img src="https://img.shields.io/badge/Helius_RPC-FF4500?style=flat-square" alt="Helius" />
-  <img src="https://img.shields.io/badge/Coinglass_API-00BFFF?style=flat-square" alt="Coinglass" />
-  <img src="https://img.shields.io/badge/Voltr_SDK-1a1a2e?style=flat-square" alt="Voltr SDK" />
-  <img src="https://img.shields.io/badge/Ed25519_Attestation-8B5CF6?style=flat-square" alt="Ed25519" />
+ <img src="https://img.shields.io/badge/Zeta_Protocol-6366F1?style=flat-square" alt="Zeta Markets" />
+ <img src="https://img.shields.io/badge/Kamino_Finance-22C55E?style=flat-square" alt="Kamino Finance" />
+ <img src="https://img.shields.io/badge/Jupiter_Aggregator-FFA500?style=flat-square" alt="Jupiter" />
+ <img src="https://img.shields.io/badge/Pyth_Network-7C3AED?style=flat-square" alt="Pyth Network" />
+ <img src="https://img.shields.io/badge/Helius_RPC-FF4500?style=flat-square" alt="Helius" />
+ <img src="https://img.shields.io/badge/Coinglass_API-00BFFF?style=flat-square" alt="Coinglass" />
+ <img src="https://img.shields.io/badge/Voltr_SDK-1a1a2e?style=flat-square" alt="Voltr SDK" />
+ <img src="https://img.shields.io/badge/Ed25519_Attestation-8B5CF6?style=flat-square" alt="Ed25519" />
 </p>
 
 ---
@@ -84,12 +84,12 @@ The vault accepts USDC deposits, deploys across two strategy engines, and uses a
 
 ```mermaid
 graph TD
-    Deposits["USDC Deposits"] --> Vault["Ranger Earn Vault"]
-    Vault --> FloorEngine["50% Floor Yield"]
-    Vault --> ActiveEngine["50% Active Trading"]
-    FloorEngine --> Kamino["Kamino Lending\n4-12% APY"]
-    ActiveEngine --> Zeta["Zeta Perps\nSOL / BTC / ETH"]
-    Zeta --> Signal["AI Signal Engine\nXGBoost Ensemble"]
+ Deposits["USDC Deposits"] --> Vault["Ranger Earn Vault"]
+ Vault --> FloorEngine["50% Floor Yield"]
+ Vault --> ActiveEngine["50% Active Trading"]
+ FloorEngine --> Kamino["Kamino Lending\n4-12% APY"]
+ ActiveEngine --> Zeta["Zeta Perps\nSOL / BTC / ETH"]
+ Zeta --> Signal["AI Signal Engine\nXGBoost Ensemble"]
 ```
 
 ### Built With
@@ -121,26 +121,26 @@ We combine both in a single vault with a **provable yield floor** and **AI-enhan
 
 ```mermaid
 graph LR
-    subgraph Floor["Floor Engine -- 50% of Vault"]
-        F1["USDC in Kamino Lending"]
-        F2["4-12% APY from interest"]
-        F3["Always active -- minimum yield"]
-        F4["Rewards compounded hourly"]
-    end
+ subgraph Floor["Floor Engine -- 50% of Vault"]
+ F1["USDC in Kamino Lending"]
+ F2["4-12% APY from interest"]
+ F3["Always active -- minimum yield"]
+ F4["Rewards compounded hourly"]
+ end
 
-    subgraph Active["Active Engine -- 50% of Vault"]
-        A1["ML predicts 1h forward returns"]
-        A2["Momentum sub-model: 40% weight"]
-        A3["Mean-rev sub-model: 60% weight"]
-        A4["SOL-PERP, BTC-PERP, ETH-PERP"]
-        A5["Delta-neutral wrapper"]
-    end
+ subgraph Active["Active Engine -- 50% of Vault"]
+ A1["ML predicts 1h forward returns"]
+ A2["Momentum sub-model: 40% weight"]
+ A3["Mean-rev sub-model: 60% weight"]
+ A4["SOL-PERP, BTC-PERP, ETH-PERP"]
+ A5["Delta-neutral wrapper"]
+ end
 
-    subgraph Novel["Novel Alpha Source"]
-        N1["Coinglass liquidation heatmap"]
-        N2["Clusters act as price magnets"]
-        N3["Predicts mean-reversion probability"]
-    end
+ subgraph Novel["Novel Alpha Source"]
+ N1["Coinglass liquidation heatmap"]
+ N2["Clusters act as price magnets"]
+ N3["Predicts mean-reversion probability"]
+ end
 ```
 
 ### Why This Works
@@ -172,51 +172,51 @@ graph LR
 
 ```mermaid
 graph TB
-    subgraph Solana["Solana Blockchain"]
-        Vault["Ranger Vault (Voltr SDK)\nLP tokens | 3 strategies"]
-        ZetaP["Zeta Markets\nSOL/BTC/ETH-PERP"]
-        KaminoP["Kamino Finance\nUSDC Lending"]
-        Adaptors["Zeta Adaptor / Kamino Adaptor"]
-        Vault --- Adaptors
-        ZetaP --- Adaptors
-        KaminoP --- Adaptors
-    end
+ subgraph Solana["Solana Blockchain"]
+ Vault["Ranger Vault (Voltr SDK)\nLP tokens | 3 strategies"]
+ ZetaP["Zeta Markets\nSOL/BTC/ETH-PERP"]
+ KaminoP["Kamino Finance\nUSDC Lending"]
+ Adaptors["Zeta Adaptor / Kamino Adaptor"]
+ Vault --- Adaptors
+ ZetaP --- Adaptors
+ KaminoP --- Adaptors
+ end
 
-    Adaptors -->|"Ed25519 attested TXs"| Keeper
+ Adaptors -->|"Ed25519 attested TXs"| Keeper
 
-    Keeper["Keeper Bot (TypeScript)\nReceipt Refresh: 5 min\nReward Compound: 1 hr\nSignal Rebalance: 15 min"]
+ Keeper["Keeper Bot (TypeScript)\nReceipt Refresh: 5 min\nReward Compound: 1 hr\nSignal Rebalance: 15 min"]
 
-    Keeper -->|"HTTP (authenticated)"| Signal
+ Keeper -->|"HTTP (authenticated)"| Signal
 
-    Signal["Signal Engine (Python)\nXGBoost Ensemble\n17 Features | 4 Data Sources"]
+ Signal["Signal Engine (Python)\nXGBoost Ensemble\n17 Features | 4 Data Sources"]
 
-    Signal -->|"HTTP (read-only)"| Dashboard
+ Signal -->|"HTTP (read-only)"| Dashboard
 
-    Dashboard["Dashboard (Next.js 14)\n7 Pages"]
+ Dashboard["Dashboard (Next.js 14)\n7 Pages"]
 ```
 
 ### Data Flow (Every 15 Minutes)
 
 ```mermaid
 flowchart TD
-    subgraph Fetch["Phase 1: Data Collection"]
-        ZetaAPI["Zeta API\nfunding rates, OI, volume"]
-        CG["Coinglass\nliquidation heatmap"]
-        Pyth["Pyth\noracle prices"]
-        Computed["Computed\nBB, RSI, VWAP"]
-    end
+ subgraph Fetch["Phase 1: Data Collection"]
+ ZetaAPI["Zeta API\nfunding rates, OI, volume"]
+ CG["Coinglass\nliquidation heatmap"]
+ Pyth["Pyth\noracle prices"]
+ Computed["Computed\nBB, RSI, VWAP"]
+ end
 
-    Fetch --> FE["Feature Engineer\n17-feature vector"]
-    FE --> Mom["Momentum Model x 0.4"]
-    FE --> Rev["Mean-Rev Model x 0.6"]
-    Mom --> Ensemble["Ensemble Signal\nrange: -1.0 to +1.0"]
-    Rev --> Ensemble
+ Fetch --> FE["Feature Engineer\n17-feature vector"]
+ FE --> Mom["Momentum Model x 0.4"]
+ FE --> Rev["Mean-Rev Model x 0.6"]
+ Mom --> Ensemble["Ensemble Signal\nrange: -1.0 to +1.0"]
+ Rev --> Ensemble
 
-    Ensemble --> Risk{"Risk Check\nDD < 3% | Health > 15\nDelta < 0.10 | Lev < 2x"}
+ Ensemble --> Risk{"Risk Check\nDD < 3% | Health > 15\nDelta < 0.10 | Lev < 2x"}
 
-    Risk -->|"signal > 0.6"| Long["LONG: Open perp on Zeta\nAdjust allocation to Zeta\nMonitor SL/TP"]
-    Risk -->|"signal < -0.6"| Short["SHORT: Open perp on Zeta\nAdjust allocation\nMonitor SL/TP"]
-    Risk -->|"|signal| < 0.6"| Neutral["NEUTRAL: Close positions\nShift allocation to Kamino"]
+ Risk -->|"signal > 0.6"| Long["LONG: Open perp on Zeta\nAdjust allocation to Zeta\nMonitor SL/TP"]
+ Risk -->|"signal < -0.6"| Short["SHORT: Open perp on Zeta\nAdjust allocation\nMonitor SL/TP"]
+ Risk -->|"|signal| < 0.6"| Neutral["NEUTRAL: Close positions\nShift allocation to Kamino"]
 ```
 
 ---
@@ -229,13 +229,13 @@ No other hackathon submission uses this. We fetch real-time liquidation cluster 
 
 ```python
 # Features derived from liquidation heatmap:
-"liq_nearest_long_dist"      # Distance to nearest long liquidation cluster
-"liq_nearest_short_dist"     # Distance to nearest short liquidation cluster
-"liq_long_density_5pct"      # Total long liq $ within 5% of price
-"liq_short_density_5pct"     # Total short liq $ within 5% of price
-"liq_imbalance_ratio"        # Long density / total density
-"liq_magnetic_pull"          # Predicted price direction from liq magnets
-"liq_proximity_score"        # Composite proximity to any cluster
+"liq_nearest_long_dist" # Distance to nearest long liquidation cluster
+"liq_nearest_short_dist" # Distance to nearest short liquidation cluster
+"liq_long_density_5pct" # Total long liq $ within 5% of price
+"liq_short_density_5pct" # Total short liq $ within 5% of price
+"liq_imbalance_ratio" # Long density / total density
+"liq_magnetic_pull" # Predicted price direction from liq magnets
+"liq_proximity_score" # Composite proximity to any cluster
 ```
 
 **Why it works:** Large liquidation clusters act as price "magnets" — price tends to sweep toward them, triggering cascading liquidations. When price is near a cluster, mean-reversion probability increases. This gives our model a structural edge over pure technical analysis.
@@ -247,14 +247,14 @@ Every trade transaction is cryptographically signed by the AI agent's keypair an
 ```typescript
 // Every trade TX includes:
 const ed25519Ix = Ed25519Program.createInstructionWithPrivateKey({
-  privateKey: agentPrivKey,
-  message: tradeInstruction.data,
+ privateKey: agentPrivKey,
+ message: tradeInstruction.data,
 });
 
 const tx = new Transaction()
-  .add(computeBudgetIx)    // Compute budget
-  .add(ed25519Ix)          // Ed25519 verification instruction
-  .add(tradeInstruction);  // Actual trade
+ .add(computeBudgetIx) // Compute budget
+ .add(ed25519Ix) // Ed25519 verification instruction
+ .add(tradeInstruction); // Actual trade
 ```
 
 **Why it matters:** This prevents rogue keeper manipulation. Judges can verify on Solscan that every trade TX contains an Ed25519 verification instruction — proving the AI agent authorized each trade.
@@ -301,29 +301,29 @@ Most hackathon vaults have one loop (trade). We have three:
 ### Yield Breakdown
 
 ```
-Component               Contribution    Source
----------------------   ------------    ------
-Kamino Floor Yield        4.10%         USDC lending interest (50% allocation)
-Funding Rate Income       5.80%         Zeta perp funding (delta-neutral)
-Active Trading Alpha      5.30%         ML signal directional trades
----------------------   ------------
-TOTAL (6-month)          15.20%
-ANNUALIZED               32.40%
+Component Contribution Source
+--------------------- ------------ ------
+Kamino Floor Yield 4.10% USDC lending interest (50% allocation)
+Funding Rate Income 5.80% Zeta perp funding (delta-neutral)
+Active Trading Alpha 5.30% ML signal directional trades
+--------------------- ------------
+TOTAL (6-month) 15.20%
+ANNUALIZED 32.40%
 ```
 
 ### Scenario Analysis
 
 ```
-                    CONSERVATIVE    BASE CASE    OPTIMISTIC
-                    -------------   ----------   ----------
-Kamino Floor APY         4.0%          8.0%         12.0%
-Funding Rate APR         8.0%         15.0%         25.0%
-Active Alpha             2.0%          5.0%         12.0%
+ CONSERVATIVE BASE CASE OPTIMISTIC
+ ------------- ---------- ----------
+Kamino Floor APY 4.0% 8.0% 12.0%
+Funding Rate APR 8.0% 15.0% 25.0%
+Active Alpha 2.0% 5.0% 12.0%
 
-TOTAL VAULT APY         6.5%         13.1%         22.7%
-Annualized             13.3%         28.0%         50.6%
-Max Drawdown           -2.0%         -4.5%         -7.5%
-Sharpe Ratio            1.20          1.70          2.40
+TOTAL VAULT APY 6.5% 13.1% 22.7%
+Annualized 13.3% 28.0% 50.6%
+Max Drawdown -2.0% -4.5% -7.5%
+Sharpe Ratio 1.20 1.70 2.40
 ```
 
 ### Live Performance (Hackathon Period)
@@ -331,13 +331,13 @@ Sharpe Ratio            1.20          1.70          2.40
 | Metric | Value |
 |--------|-------|
 | Period | Mar 9 -- Apr 6, 2026 |
-| Starting NAV | 1,000,000 USDC |
-| Ending NAV | Generated from live trading logs |
-| 28-day Return | Generated from live trading logs |
-| Total Trades | Generated from live trading logs |
-| Attested TXs | Generated from live trading logs |
+| Deployment | Solana Devnet |
+| Strategy | Backtest-validated, devnet-deployed |
+| Backtest APY (annualized) | 32.40% |
+| Backtest Max Drawdown | -4.80% |
+| Backtest Sharpe | 1.65 |
 
-> **Vault Address:** `VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT` | **Solscan:** View on-chain activity | **Ranger Dashboard:** View vault
+> **Vault Address:** `VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT` (devnet) | **Solscan:** [View on-chain activity](https://solscan.io/account/VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT?cluster=devnet)
 
 ---
 
@@ -386,16 +386,16 @@ LAYER 6 -- EMERGENCY
 
 ```typescript
 const RISK_PARAMS = {
-  maxDailyDrawdown:        0.03,    // 3% -- triggers full unwind
-  maxMonthlyDrawdown:      0.08,    // 8% -- triggers full unwind
-  maxLeverage:             2.0,     // Health rate stays >1.5
-  maxNetDelta:             0.10,    // Near-neutral at all times
-  stopLossPerTrade:       -0.005,   // -0.5% per trade
-  takeProfitPerTrade:      0.015,   // +1.5% per trade
-  maxConcurrentPositions:  3,
-  kellyFraction:           0.25,    // Conservative Kelly sizing
-  minHealthRate:           15,      // Zeta health (0-100)
-  varCeiling95:            0.02,    // 2% at 95% confidence
+ maxDailyDrawdown: 0.03, // 3% -- triggers full unwind
+ maxMonthlyDrawdown: 0.08, // 8% -- triggers full unwind
+ maxLeverage: 2.0, // Health rate stays >1.5
+ maxNetDelta: 0.10, // Near-neutral at all times
+ stopLossPerTrade: -0.005, // -0.5% per trade
+ takeProfitPerTrade: 0.015, // +1.5% per trade
+ maxConcurrentPositions: 3,
+ kellyFraction: 0.25, // Conservative Kelly sizing
+ minHealthRate: 15, // Zeta health (0-100)
+ varCeiling95: 0.02, // 2% at 95% confidence
 };
 ```
 
@@ -406,72 +406,72 @@ const RISK_PARAMS = {
 ## Repository Structure
 
 ```
-ranger-ai-vault/                    143 files across 4 packages
+ranger-ai-vault/ 143 files across 4 packages
 |
-+-- vault/                          23 files -- Vault management (TypeScript)
-|   +-- src/
-|   |   +-- constants/              Zeta, Kamino, token addresses
-|   |   +-- scripts/                15 scripts: admin, manager, user, query
-|   |   +-- helper.ts               Optimised TX sender (compute budget + retry)
-|   |   +-- variables.ts            Vault addresses, keypair paths
-|   |   +-- types.ts                TypeScript interfaces
-|   +-- keys/                       .gitignored keypair files
++-- vault/ 23 files -- Vault management (TypeScript)
+| +-- src/
+| | +-- constants/ Zeta, Kamino, token addresses
+| | +-- scripts/ 15 scripts: admin, manager, user, query
+| | +-- helper.ts Optimised TX sender (compute budget + retry)
+| | +-- variables.ts Vault addresses, keypair paths
+| | +-- types.ts TypeScript interfaces
+| +-- keys/ .gitignored keypair files
 |
-+-- signal-engine/                  25 files -- ML + Data Pipeline (Python)
-|   +-- src/
-|   |   +-- data/                   Coinglass, Zeta, Pyth, Helius fetchers
-|   |   +-- features/               Feature engineering + indicators
-|   |   +-- models/                 XGBoost momentum, mean-rev, ensemble
-|   |   +-- risk/                   VaR, Kelly, drawdown, delta monitors
-|   |   +-- signal_server.py        FastAPI server (authenticated)
-|   |   +-- config.py               All tunable parameters
-|   +-- training/                   Train + backtest pipelines
-|   +-- models/saved/               Serialized trained models
-|   +-- tests/                      5 test files (45 tests)
++-- signal-engine/ 25 files -- ML + Data Pipeline (Python)
+| +-- src/
+| | +-- data/ Coinglass, Zeta, Pyth, Helius fetchers
+| | +-- features/ Feature engineering + indicators
+| | +-- models/ XGBoost momentum, mean-rev, ensemble
+| | +-- risk/ VaR, Kelly, drawdown, delta monitors
+| | +-- signal_server.py FastAPI server (authenticated)
+| | +-- config.py All tunable parameters
+| +-- training/ Train + backtest pipelines
+| +-- models/saved/ Serialized trained models
+| +-- tests/ 5 test files (45 tests)
 |
-+-- keeper/                         22 files -- Execution Bot (TypeScript)
-|   +-- src/
-|   |   +-- core/                   Keeper loop, signal client, rebalance engine
-|   |   +-- execution/              Zeta, Jupiter, vault allocator, emergency
-|   |   +-- attestation/            Ed25519 signing + verification
-|   |   +-- risk/                   Health monitor, position tracker
-|   |   +-- monitoring/             Logger, metrics, Telegram alerts
-|   +-- tests/                      7 test files (36 tests) + mocks
++-- keeper/ 22 files -- Execution Bot (TypeScript)
+| +-- src/
+| | +-- core/ Keeper loop, signal client, rebalance engine
+| | +-- execution/ Zeta, Jupiter, vault allocator, emergency
+| | +-- attestation/ Ed25519 signing + verification
+| | +-- risk/ Health monitor, position tracker
+| | +-- monitoring/ Logger, metrics, Telegram alerts
+| +-- tests/ 7 test files (36 tests) + mocks
 |
-+-- dashboard/                      14+ files -- UI (Next.js 14)
-|   +-- app/                        7 pages: overview, vault, signals, positions,
-|   |                               risk, backtest, logs
-|   +-- components/                 Reusable UI components (shadcn/ui)
-|   +-- hooks/                      React Query hooks for data fetching
-|   +-- lib/                        Utilities, Solana connection, constants
++-- dashboard/ 14+ files -- UI (Next.js 14)
+| +-- app/ 7 pages: overview, vault, signals, positions,
+| | risk, backtest, logs
+| +-- components/ Reusable UI components (shadcn/ui)
+| +-- hooks/ React Query hooks for data fetching
+| +-- lib/ Utilities, Solana connection, constants
 |
-+-- infra/                          Deployment infrastructure
-|   +-- docker/                     Dockerfiles + docker-compose.yml
-|   +-- scripts/                    Setup, deploy, run scripts
++-- infra/ Deployment infrastructure
+| +-- docker/ Dockerfiles + docker-compose.yml
+| +-- scripts/ Setup, deploy, run scripts
 |
-+-- tests/                          Integration tests + backtest results
-|   +-- integration/                Cross-package tests
-|   +-- backtests/results/          metrics_summary.json, equity_curve.png, etc.
++-- tests/ Integration tests + backtest results
+| +-- integration/ Cross-package tests
+| +-- backtests/results/ metrics_summary.json, equity_curve.png, etc.
 |
-+-- submission/                     Hackathon submission materials
-|   +-- strategy-doc.md             Strategy documentation
-|   +-- demo-video-script.md        3-minute demo video outline
-|   +-- wallet-addresses.md         On-chain verification addresses
++-- submission/ Hackathon submission materials
+| +-- strategy-doc.md Strategy documentation
+| +-- demo-video-script.md 3-minute demo video outline
+| +-- wallet-addresses.md On-chain verification addresses
 |
-+-- docs/                           Project documentation
-|   +-- ARCHITECTURE.md             System architecture with 18 Mermaid diagrams
-|   +-- SETUP.md                    Detailed setup guide
-|   +-- DEPLOYMENT.md               Vercel, Docker, and CI/CD deployment guide
-|   +-- RISK-FRAMEWORK.md           Risk management documentation
-|   +-- SIGNAL-ENGINE.md            ML model documentation
-|   +-- ATTESTATION.md              Ed25519 attestation explanation
-|   +-- RUNBOOK.md                  Operational runbook
++-- docs/ Project documentation
+| +-- ARCHITECTURE.md System architecture with 18 Mermaid diagrams
+| +-- SETUP.md Detailed setup guide
+| +-- DEPLOYMENT.md Vercel, Docker, and CI/CD deployment guide
+| +-- RISK-FRAMEWORK.md Risk management documentation
+| +-- SIGNAL-ENGINE.md ML model documentation
+| +-- ATTESTATION.md Ed25519 attestation explanation
+| +-- RUNBOOK.md Operational runbook
 |
-+-- .github/workflows/              CI/CD pipeline (7 workflows)
++-- .github/workflows/ CI/CD pipeline (15 workflows)
 |
-+-- .env.example                    Environment variable template
-+-- Makefile                        All project commands
-+-- README.md                       This file
++-- .env.example Environment variable template
++-- Makefile All project commands
++-- README.md This file
 ```
 
 ---
@@ -554,9 +554,9 @@ KEEPER_SECRET=generate_a_strong_random_string_here
 make keygen
 
 # Or manually:
-solana-keygen new --no-bip39-passphrase -o vault/keys/admin.json     # Vault admin
-solana-keygen new --no-bip39-passphrase -o vault/keys/manager.json   # Fund manager
-solana-keygen new --no-bip39-passphrase -o keeper/keys/agent.json    # AI attestation agent
+solana-keygen new --no-bip39-passphrase -o vault/keys/admin.json # Vault admin
+solana-keygen new --no-bip39-passphrase -o vault/keys/manager.json # Fund manager
+solana-keygen new --no-bip39-passphrase -o keeper/keys/agent.json # AI attestation agent
 ```
 
 > **Security:** Keep admin and manager as separate keypairs. The agent keypair is only used for Ed25519 attestation signing. Never commit keypair files to git.
@@ -711,10 +711,10 @@ make test-all
 ### Individual Package Tests
 
 ```bash
-make test-signal     # Python: 45 tests (pytest + coverage)
-make test-keeper     # TypeScript: 36 tests (Jest + coverage)
-make test-vault      # Compile check (tsc --noEmit)
-make test-dashboard  # Next.js build
+make test-signal # Python: 45 tests (pytest + coverage)
+make test-keeper # TypeScript: 36 tests (Jest + coverage)
+make test-vault # Compile check (tsc --noEmit)
+make test-dashboard # Next.js build
 ```
 
 ### Local CI (Same as GitHub Actions)
@@ -733,7 +733,7 @@ Expected output:
 
 ```
 ==================================
-  Ranger AI Vault -- Structure Check
+ Ranger AI Vault -- Structure Check
 ==================================
 
 -- Root Files --
@@ -743,7 +743,7 @@ Expected output:
 [PASS] README.md
 ...
 ==================================
-  Found: 143  Missing: 0
+ Found: 143 Missing: 0
 ==================================
 All files present -- ready to push
 ```
@@ -752,23 +752,69 @@ All files present -- ready to push
 
 ## CI/CD Pipeline
 
-The GitHub Actions pipeline runs on every push and PR, validating the entire project across 5 stages:
+The project has **15 GitHub Actions workflows** organized into CI, CD, and Security layers.
+
+### CI Pipeline (ci-main.yml)
+
+Runs on every push and PR, validating the entire project across 5 stages plus a full security audit:
 
 ```
-Stage 1: VALIDATE -----> File structure + env template check
-    |
+Stage 0: SECURITY ------> 12-layer security audit pipeline (see below)
+ |
+Stage 1: VALIDATE ------> File structure + env template check
+ |
 Stage 2: BUILD (parallel)
-    |     +-- Signal Engine (lint, type-check, 45 tests, server smoke test)
-    |     +-- Keeper Bot    (compile, 36 tests, import chain, dry run)
-    |     +-- Vault Scripts (compile, compute budget check, 15 scripts)
-    |     +-- Dashboard     (compile, Next.js build, page check)
-    |
-Stage 3: INTEGRATION --> Cross-package communication tests
-    |
-Stage 4: BACKTEST -----> 6-month synthetic backtest + artifact generation
-    |
-Stage 5: SUMMARY -----> Pass/fail report
+ | +-- Signal Engine (lint, type-check, 45 tests, server smoke test)
+ | +-- Keeper Bot (compile, 36 tests, import chain, dry run)
+ | +-- Vault Scripts (compile, compute budget check, 15 scripts)
+ | +-- Dashboard (compile, Next.js build, page check)
+ |
+Stage 3: INTEGRATION ---> Cross-package communication tests
+ |
+Stage 4: BACKTEST -------> 6-month synthetic backtest + artifact generation
+ |
+Stage 5: SUMMARY -------> Pass/fail report
 ```
+
+### Security Audit Pipeline (security-audit.yml)
+
+A comprehensive, production-grade, 12-layer security scanning pipeline that runs on every push, PR, and weekly schedule:
+
+| Layer | Check | Tool / Method |
+|-------|-------|---------------|
+| L1 | Secret Detection | Gitleaks + Solana-specific patterns |
+| L2a | NPM Supply Chain | `npm audit` (keeper, vault, dashboard) |
+| L2b | Rust Supply Chain | `cargo-audit` + `cargo-deny` |
+| L3 | SAST | CodeQL (TypeScript static analysis) |
+| L4 | Solana Hardening | Custom DeFi-logic checks (RPC, keypairs, DRY_RUN, slippage) |
+| L5 | Rust Security Lint | Clippy security lints + unsafe audit |
+| L6 | Docker Security | Hadolint + container privilege checks |
+| L7 | License Compliance | Copyleft detection across all packages |
+| L8 | OSSF Scorecard | Supply chain posture scoring |
+| L9 | IaC Security | Nginx headers + Docker Compose audit |
+| L10 | Lockfile Integrity | Drift detection between package.json and lockfiles |
+| L11 | Trivy SCA | Filesystem vulnerability scan + SBOM generation |
+| L12 | PR Comment Bot | Auto-posts security summary on pull requests |
+
+### All Workflows
+
+| Workflow | Type | Trigger | Purpose |
+|----------|------|---------|---------|
+| `ci-main.yml` | CI | push/PR | Orchestrates full pipeline |
+| `ci-signal-engine.yml` | CI | push (signal-engine-rs/) | Rust cargo check, clippy, tests |
+| `ci-keeper.yml` | CI | push (keeper/) | TypeScript compile, Jest, dry run |
+| `ci-vault.yml` | CI | push (vault/) | Compile, compute budget validation |
+| `ci-dashboard.yml` | CI | push (dashboard/) | Next.js build, page validation |
+| `ci-integration.yml` | CI | workflow_call | Cross-package integration tests |
+| `ci-backtest.yml` | CI | workflow_call | Synthetic backtest + artifacts |
+| `security-audit.yml` | Security | push/PR/weekly | 12-layer security pipeline |
+| `security-scan.yml` | Security | push/weekly | Thin wrapper -> security-audit.yml |
+| `scorecard.yml` | Security | push/weekly | Thin wrapper -> security-audit.yml (L8) |
+| `validate-structure.yml` | CI | PR/workflow_call | Repo structure validation |
+| `cd-docker.yml` | CD | push (main/devnet) | Build + push Docker images to GHCR |
+| `cd-dashboard.yml` | CD | push (main, dashboard/) | Deploy dashboard to Vercel |
+| `cd-devnet.yml` | CD | push (devnet) | Deploy vault + signal engine to devnet |
+| `cd-mainnet.yml` | CD | manual (workflow_dispatch) | Production mainnet deployment |
 
 ### Setting Up CI
 
@@ -836,14 +882,14 @@ If the keeper detects a risk breach, it automatically:
 
 ```mermaid
 graph TD
-    Features["17 Features"] --> Mom["Momentum Model\nXGBoost | Weight: 40%"]
-    Features --> Rev["Mean-Rev Model\nXGBoost | Weight: 60%"]
-    Mom --> Ensemble["Ensemble Combiner\nsignal = 0.4 x mom + 0.6 x rev\n+ regime adjustment + confidence"]
-    Rev --> Ensemble
-    Ensemble --> Signal["Signal in -1 to +1"]
-    Signal --> Long["> +0.6 --> LONG"]
-    Signal --> Short["< -0.6 --> SHORT"]
-    Signal --> Neutral["else --> NEUTRAL"]
+ Features["17 Features"] --> Mom["Momentum Model\nXGBoost | Weight: 40%"]
+ Features --> Rev["Mean-Rev Model\nXGBoost | Weight: 60%"]
+ Mom --> Ensemble["Ensemble Combiner\nsignal = 0.4 x mom + 0.6 x rev\n+ regime adjustment + confidence"]
+ Rev --> Ensemble
+ Ensemble --> Signal["Signal in -1 to +1"]
+ Signal --> Long["> +0.6 --> LONG"]
+ Signal --> Short["< -0.6 --> SHORT"]
+ Signal --> Neutral["else --> NEUTRAL"]
 ```
 
 ### Training
@@ -853,12 +899,12 @@ cd signal-engine && source venv/bin/activate
 
 # Full training pipeline
 python training/train_models.py \
-  --assets SOL-PERP BTC-PERP ETH-PERP \
-  --lookback 180
+ --assets SOL-PERP BTC-PERP ETH-PERP \
+ --lookback 180
 
 # Walk-forward backtest
 python training/backtest.py \
-  --config ../tests/backtests/backtest_config.yaml
+ --config ../tests/backtests/backtest_config.yaml
 ```
 
 > **Full signal engine documentation:** [docs/SIGNAL-ENGINE.md](./docs/SIGNAL-ENGINE.md)
@@ -871,45 +917,45 @@ python training/backtest.py \
 
 ```mermaid
 flowchart TD
-    Start["Keeper Tick (every 15 min)"] --> S1["1. Fetch signals for SOL, BTC, ETH"]
-    S1 --> S2["2. Fetch Zeta health state"]
-    S2 --> S3{"3. Check all risk limits (6 layers)"}
-    S3 -->|"Breach"| S4["4. Emergency unwind"]
-    S3 -->|"Pass"| S5["5. Check SL/TP on open positions"]
-    S5 --> S6["6. For each strong signal:\na. Kelly position size\nb. Build trade IX\nc. Ed25519 sign\nd. Send TX"]
-    S6 --> S7["7. Rebalance vault allocation"]
-    S7 --> S8["8. Log metrics + send alerts"]
-    S8 --> End["Wait 15 min"]
-    S4 --> End
+ Start["Keeper Tick (every 15 min)"] --> S1["1. Fetch signals for SOL, BTC, ETH"]
+ S1 --> S2["2. Fetch Zeta health state"]
+ S2 --> S3{"3. Check all risk limits (6 layers)"}
+ S3 -->|"Breach"| S4["4. Emergency unwind"]
+ S3 -->|"Pass"| S5["5. Check SL/TP on open positions"]
+ S5 --> S6["6. For each strong signal:\na. Kelly position size\nb. Build trade IX\nc. Ed25519 sign\nd. Send TX"]
+ S6 --> S7["7. Rebalance vault allocation"]
+ S7 --> S8["8. Log metrics + send alerts"]
+ S8 --> End["Wait 15 min"]
+ S4 --> End
 ```
 
 ### Ed25519 Attestation Flow
 
 ```mermaid
 sequenceDiagram
-    participant K as Keeper
-    participant A as Agent Keypair
-    participant TX as Transaction
-    participant V as Solana Validators
-    participant D as Zeta Program
+ participant K as Keeper
+ participant A as Agent Keypair
+ participant TX as Transaction
+ participant V as Solana Validators
+ participant D as Zeta Program
 
-    K->>K: Build trade instruction
-    K->>A: Sign instruction data
-    A-->>K: Ed25519 signature
-    K->>TX: Assemble transaction
-    Note over TX: ix[1] ComputeBudget (limit)
-    Note over TX: ix[2] ComputeBudget (price)
-    Note over TX: ix[3] Ed25519 VERIFY
-    Note over TX: ix[4] Zeta placePerpOrder
-    TX->>V: Send to Solana
-    V->>V: Verify Ed25519 signature
-    alt Signature Valid
-        V->>D: Execute trade
-        D-->>K: txSig confirmed
-    else Signature Invalid
-        V-->>K: TX Rejected
-    end
-    K->>K: Log attestation record
+ K->>K: Build trade instruction
+ K->>A: Sign instruction data
+ A-->>K: Ed25519 signature
+ K->>TX: Assemble transaction
+ Note over TX: ix[1] ComputeBudget (limit)
+ Note over TX: ix[2] ComputeBudget (price)
+ Note over TX: ix[3] Ed25519 VERIFY
+ Note over TX: ix[4] Zeta placePerpOrder
+ TX->>V: Send to Solana
+ V->>V: Verify Ed25519 signature
+ alt Signature Valid
+ V->>D: Execute trade
+ D-->>K: txSig confirmed
+ else Signature Invalid
+ V-->>K: TX Rejected
+ end
+ K->>K: Log attestation record
 ```
 
 Anyone can verify on Solscan that every trade TX contains an `Ed25519SigVerify111111111111111111111111111` instruction.
@@ -944,12 +990,12 @@ The dashboard is a production-grade Next.js 14 application with dark/light theme
 
 ### Key Features
 
-- **🌓 Dark/Light Theme** — Global theme system with CSS variables, persisted in localStorage
-- **👛 Wallet Integration** — Solana Wallet Adapter (Phantom, Solflare, Coinbase, Ledger, + more)
-- **🔑 API Key Management** — Encrypted CRUD for 8 services (Signal Engine, Helius, Coinglass, Zeta, Birdeye, Jupiter, Cobo MPC, Custom)
-- **🎯 TopBar Profile** — Connected wallet shows avatar, name, and address with dropdown menu
-- **⚡ Animations** — Page transitions, stagger grids, scale-on-hover, count-up counters via Framer Motion
-- **📱 Responsive** — Full mobile support with collapsible sidebar and mobile navigation
+- **Dark/Light Theme** -- Global theme system with CSS variables, persisted in localStorage
+- **Wallet Integration** -- Solana Wallet Adapter (Phantom, Solflare, Coinbase, Ledger, + more)
+- **API Key Management** -- Encrypted CRUD for 8 services (Signal Engine, Helius, Coinglass, Zeta, Birdeye, Jupiter, Cobo MPC, Custom)
+- **TopBar Profile** -- Connected wallet shows avatar, name, and address with dropdown menu
+- **Animations** -- Page transitions, stagger grids, scale-on-hover, count-up counters via Framer Motion
+- **Responsive** -- Full mobile support with collapsible sidebar and mobile navigation
 
 ### Dashboard Tech Stack
 
@@ -987,9 +1033,9 @@ After deployment, judges can verify:
 ### Transaction Distribution (Expected)
 
 ```
-~73%  Receipt refresh instructions (routine maintenance)
-~24%  Rebalance / allocation adjustments
-~1%   Zeta perp order placements
+~73% Receipt refresh instructions (routine maintenance)
+~24% Rebalance / allocation adjustments
+~1% Zeta perp order placements
 ~0.5% Jupiter spot swaps
 ~0.3% Kamino reward claims
 ~0.1% Admin / config transactions
@@ -999,11 +1045,12 @@ After deployment, judges can verify:
 
 ## Submission Checklist
 
-- [ ] Demo Video (max 3 min) — `submission/demo-video-script.md`
-- [ ] Strategy Documentation — `submission/strategy-doc.md`
-- [ ] Code Repository (add @jakeyvee for access) — this repo
-- [ ] On-chain Verification — `submission/wallet-addresses.md`
-- [ ] Backtest Results — `tests/backtests/results/`
+- [ ] Demo Video (max 3 min) -- `submission/demo-video-script.md`
+- [x] Strategy Documentation -- `submission/strategy-doc.md`
+- [x] Code Repository (public repo) -- this repo
+- [x] On-chain Verification -- `submission/wallet-addresses.md`
+- [x] Backtest Results -- `tests/backtests/results/`
+- [x] CEX Strategy Verification -- N/A (fully on-chain execution via Zeta + Kamino)
 
 ---
 
@@ -1118,48 +1165,48 @@ All within free tier limits.
 
 ```bash
 # SETUP
-make setup              # Install all dependencies
-make keygen             # Generate Solana keypairs
+make setup # Install all dependencies
+make keygen # Generate Solana keypairs
 
 # DEPLOYMENT
-make deploy-devnet      # Deploy vault to devnet
-make deploy-mainnet     # Deploy vault to mainnet
+make deploy-devnet # Deploy vault to devnet
+make deploy-mainnet # Deploy vault to mainnet
 
 # SERVICES
-make signal             # Start signal engine (port 8080)
-make keeper             # Start keeper bot
-make dashboard          # Start dashboard (port 3000)
-make start              # Start all services
+make signal # Start signal engine (port 8080)
+make keeper # Start keeper bot
+make dashboard # Start dashboard (port 3000)
+make start # Start all services
 
 # ML
-make train              # Train XGBoost models
-make backtest           # Run walk-forward backtest
+make train # Train XGBoost models
+make backtest # Run walk-forward backtest
 
 # TESTING
-make test-signal        # Python unit tests
-make test-keeper        # TypeScript Jest tests
-make test-vault         # Vault compile check
-make test-dashboard     # Dashboard build
-make test-all           # Run all tests
-make ci-local           # Full CI pipeline locally
-make validate           # Quick import validation
+make test-signal # Python unit tests
+make test-keeper # TypeScript Jest tests
+make test-vault # Vault compile check
+make test-dashboard # Dashboard build
+make test-all # Run all tests
+make ci-local # Full CI pipeline locally
+make validate # Quick import validation
 
 # DOCKER
-make docker-build       # Build Docker images
-make docker-up          # Start containers
-make docker-down        # Stop containers
-make docker-logs        # View logs
+make docker-build # Build Docker images
+make docker-up # Start containers
+make docker-down # Stop containers
+make docker-logs # View logs
 
 # QUERIES
-make vault-state        # Query vault state
-make vault-positions    # Query strategy positions
-make vault-performance  # Query performance
+make vault-state # Query vault state
+make vault-positions # Query strategy positions
+make vault-performance # Query performance
 
 # UTILITIES
-make clean              # Remove build artifacts
-make lint               # Lint all packages
-make format             # Format all code
-make help               # Show all commands
+make clean # Remove build artifacts
+make lint # Lint all packages
+make format # Format all code
+make help # Show all commands
 ```
 
 ---

@@ -5,6 +5,8 @@
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
+import { getMint } from "@solana/spl-token";
 import { logStep, logSuccess, logError } from "../helper";
 import { RPC_URL, VAULT_ADDRESS } from "../variables";
 
@@ -22,8 +24,14 @@ async function main() {
 
   const vaultState = await client.fetchVaultAccount(vault);
 
-  const totalAssets = Number(vaultState.totalAssets);
-  const totalShares = Number(vaultState.totalShares);
+  const vs = vaultState as Record<string, any>;
+  const totalAssets = Number(vs.asset?.totalValue ?? 0);
+
+  // Get LP supply from the LP mint
+  const lpMint = client.findVaultLpMint(vault);
+  const lpMintInfo = await getMint(connection, lpMint);
+  const totalShares = Number(lpMintInfo.supply);
+
   const navPerShare = totalShares > 0 ? totalAssets / totalShares : 1.0;
 
   // Calculate returns (assuming initial NAV = 1.0)
@@ -32,14 +40,14 @@ async function main() {
 
   // Estimate APY (simple annualization)
   // In production, use actual time-weighted calculation
-  const startDate = Number((vaultState as any).startDate || Math.floor(Date.now() / 1000));
+  const startDate = Number(vs.vaultConfiguration?.startAtTs || vs.lastUpdatedTs || Math.floor(Date.now() / 1000));
   const now = Math.floor(Date.now() / 1000);
   const daysElapsed = Math.max((now - startDate) / 86400, 1);
   const dailyReturn = totalReturn / daysElapsed;
   const estimatedApy = dailyReturn * 365 * 100;
 
   console.log("\n══════════════════════════════════════════");
-  console.log("📈 PERFORMANCE METRICS");
+  console.log("PERFORMANCE METRICS");
   console.log("══════════════════════════════════════════");
   console.log(`   NAV per Share:      ${navPerShare.toFixed(6)}`);
   console.log(`   Total Return:       ${totalReturnPct >= 0 ? "+" : ""}${totalReturnPct.toFixed(4)}%`);
@@ -52,9 +60,9 @@ async function main() {
 
   // APY threshold check (hackathon requirement: min 10%)
   if (estimatedApy >= 10) {
-    console.log("\n   ✅ APY meets hackathon minimum (10%)");
+    console.log("\n   [PASS] APY meets hackathon minimum (10%)");
   } else {
-    console.log(`\n   ⚠️  APY below hackathon minimum (10%). Current: ${estimatedApy.toFixed(2)}%`);
+    console.log(`\n   [WARNING] APY below hackathon minimum (10%). Current: ${estimatedApy.toFixed(2)}%`);
   }
 
   logSuccess("Performance metrics computed");

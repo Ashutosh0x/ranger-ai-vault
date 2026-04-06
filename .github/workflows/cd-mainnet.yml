@@ -1,4 +1,4 @@
-name: 🔴 CD — Deploy to Mainnet
+name: CD - Deploy to Mainnet
 
 on:
   workflow_dispatch:
@@ -18,10 +18,10 @@ jobs:
       - name: Validate confirmation
         run: |
           if [ "${{ github.event.inputs.confirm }}" != "DEPLOY_MAINNET" ]; then
-            echo "❌ Confirmation text incorrect. Aborting."
+            echo "[FAIL] Confirmation text incorrect. Aborting."
             exit 1
           fi
-          echo "✅ Mainnet deployment confirmed"
+          echo "[PASS] Mainnet deployment confirmed"
 
       - uses: actions/checkout@v4
         with:
@@ -34,7 +34,7 @@ jobs:
             --workflow ci-main.yml \
             --status success \
             --limit 1 | grep -q "completed" || {
-              echo "❌ CI not passed on this version"
+              echo "[FAIL] CI not passed on this version"
               exit 1
             }
         env:
@@ -95,7 +95,7 @@ jobs:
           curl -s -X POST \
             "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="🚀 MAINNET DEPLOY — SHA: ${{ github.sha }} — Status: ${{ job.status }}"
+            -d text="MAINNET DEPLOY -- SHA: ${{ github.sha }} -- Status: ${{ job.status }}"
 
       - name: Clean up keys
         if: always()

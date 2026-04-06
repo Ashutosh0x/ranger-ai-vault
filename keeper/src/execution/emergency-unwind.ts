@@ -47,13 +47,31 @@ export class EmergencyUnwind {
       const closeTxs = await this.zetaExecutor.closeAllPositions();
       logger.info(`Closed ${closeTxs.length} perp positions`);
 
-      // Step 2: Sell all spot hedge positions back to USDC
+      // H7: Step 2 — Sell spot hedge positions using ACTUAL balances
+      // The previous implementation checked zetaExecutor.getPosition() which returns
+      // perp positions (already closed in step 1). Instead, we need to check
+      // actual spot token balances in the wallet.
       logger.info("Step 2/3: Selling spot hedges back to USDC...");
+      const ASSET_DECIMALS: Record<string, number> = {
+        "SOL-PERP": 9,
+        "BTC-PERP": 8,
+        "ETH-PERP": 8,
+      };
       for (const asset of ["SOL-PERP", "BTC-PERP", "ETH-PERP"]) {
         try {
-          const position = await this.zetaExecutor.getPosition(asset);
-          if (position && position.sizeBase > 0) {
-            logger.info(`Selling remaining spot for ${asset}`);
+          // H7 FIX: Query spot balance via Jupiter executor's connection
+          // instead of re-querying the now-closed perp position
+          const spotBalance = await this.jupiterExecutor.getSpotBalance(asset);
+          if (spotBalance > 0) {
+            logger.info(`Selling ${spotBalance.toFixed(6)} spot ${asset}`);
+            await this.jupiterExecutor.sellSpot(
+              asset,
+              spotBalance,
+              ASSET_DECIMALS[asset] || 9,
+            );
+            logger.info(`Spot hedge sold for ${asset}`);
+          } else {
+            logger.debug(`No spot balance for ${asset}`);
           }
         } catch (err: any) {
           logger.warn(`Spot sell failed for ${asset}: ${err.message}`);

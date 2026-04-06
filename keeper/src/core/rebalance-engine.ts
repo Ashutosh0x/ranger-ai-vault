@@ -1,6 +1,14 @@
 // =================================================================
 // Rebalance Engine -- 3-loop engine: receipt refresh, reward
 // compounding, signal-driven rebalance
+//
+// H3: Zeta Lend Gap
+// NOTE: The rebalance engine currently manages TWO strategies:
+//   1. kamino-lending (floor yield)
+//   2. zeta-perps (active trading)
+// A third strategy "zeta-lend" is configured in VAULT_CONFIG but
+// NOT handled by rebalanceFromSignal(). When Zeta Lend is integrated,
+// the allocation logic should be updated to a 3-way split.
 // =================================================================
 
 import { VoltrClient } from "@voltr/vault-sdk";
@@ -17,6 +25,18 @@ import {
 import { logger } from "../monitoring/logger";
 import { VAULT_CONFIG, EXECUTION_PARAMS } from "../config";
 
+// I10: Structured error type for rebalance operations
+export class RebalanceError extends Error {
+  constructor(
+    message: string,
+    public readonly code: "STRATEGY_NOT_FOUND" | "TX_FAILED" | "INVALID_ALLOCATION" | "FETCH_FAILED",
+    public readonly details?: Record<string, unknown>,
+  ) {
+    super(message);
+    this.name = "RebalanceError";
+  }
+}
+
 export interface StrategyInfo {
   address: PublicKey;
   name: string;
@@ -32,6 +52,7 @@ export class RebalanceEngine {
   // Loop timers
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
   private rewardTimer: ReturnType<typeof setInterval> | null = null;
+  private isShuttingDown: boolean = false;
 
   // Intervals
   private readonly REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 min
@@ -55,15 +76,16 @@ export class RebalanceEngine {
   // LOOP 1: RECEIPT REFRESH (every 5 min)
   // On-chain receipt values must stay current for accurate NAV.
   // Without this: LP token pricing, APY tracking, drawdown
-  // calculations ALL silently zeta from actual values.
+  // calculations ALL silently drift from actual values.
   // =================================================================
 
   async refreshReceipts(): Promise<void> {
+    if (this.isShuttingDown) return;
     const strategies = this.getStrategies();
 
     for (const strategy of strategies) {
       try {
-        const refreshIx = await this.client.createRefreshReceiptIx({
+        const refreshIx = await (this.client as any).createRefreshReceiptIx({
           vault: this.vaultAddress,
           strategy: strategy.address,
         });
@@ -100,6 +122,7 @@ export class RebalanceEngine {
   // =================================================================
 
   async claimAndCompoundRewards(): Promise<void> {
+    if (this.isShuttingDown) return;
     try {
       // Step 1: Claim Kamino protocol rewards
       const claimIx = await this.buildKaminoClaimIx();
@@ -151,6 +174,9 @@ export class RebalanceEngine {
   // LOOP 3: SIGNAL-DRIVEN REBALANCE (called by keeper-loop)
   // Adjusts allocation between Engine A (Kamino) and
   // Engine B (Zeta) based on AI signal strength.
+  //
+  // H3: This only handles kamino-lending + zeta-perps.
+  //     zeta-lend is NOT yet handled here.
   // =================================================================
 
   async rebalanceFromSignal(
@@ -159,10 +185,11 @@ export class RebalanceEngine {
   ): Promise<void> {
     const total = targetKaminoPct + targetZetaPct;
     if (Math.abs(total - 1.0) > 0.01) {
-      logger.error(
+      throw new RebalanceError(
         `Invalid allocation: Kamino=${targetKaminoPct} + Zeta=${targetZetaPct} = ${total} (must equal 1.0)`,
+        "INVALID_ALLOCATION",
+        { targetKaminoPct, targetZetaPct },
       );
-      return;
     }
 
     const totalAssets = await this.getTotalVaultAssets();
@@ -229,17 +256,22 @@ export class RebalanceEngine {
   // =================================================================
 
   private getStrategies(): StrategyInfo[] {
-    return VAULT_CONFIG.strategies.map((s) => ({
-      address: new PublicKey(s.address),
-      name: s.name,
-      defaultPct: s.defaultPct,
-    }));
+    // C7: Filter strategies with empty addresses to prevent PublicKey crash
+    return VAULT_CONFIG.strategies
+      .filter((s) => !!s.address)
+      .map((s) => ({
+        address: new PublicKey(s.address),
+        name: s.name,
+        defaultPct: s.defaultPct,
+      }));
   }
 
   async getTotalVaultAssets(): Promise<number> {
     try {
       const vaultState = await this.client.fetchVaultAccount(this.vaultAddress);
-      return Number(vaultState.totalAssets || 0);
+      // H2: Typed access with safe fallback chain
+      const state = vaultState as Record<string, any>;
+      return Number(state.asset?.totalValue ?? state.totalAssets ?? 0);
     } catch (err: any) {
       logger.error(`Failed to fetch vault assets: ${err.message}`);
       return 0;
@@ -248,13 +280,20 @@ export class RebalanceEngine {
 
   async getStrategyBalance(name: string): Promise<number> {
     const strategy = VAULT_CONFIG.strategies.find((s) => s.name === name);
-    if (!strategy) return 0;
+    if (!strategy || !strategy.address) return 0;
 
     try {
-      const strategyState = await this.client.fetchStrategyAccount(
+      const fetchFn = (this.client as Record<string, any>).fetchStrategyAccount;
+      if (typeof fetchFn !== "function") {
+        logger.warn(`fetchStrategyAccount not available on VoltrClient`);
+        return 0;
+      }
+      const strategyState = await fetchFn.call(
+        this.client,
         new PublicKey(strategy.address),
       );
-      return Number(strategyState.currentAssets || 0);
+      const state = strategyState as Record<string, any>;
+      return Number(state?.currentAssets ?? state?.asset?.totalValue ?? 0);
     } catch (err: any) {
       logger.warn(`Failed to fetch ${name} balance: ${err.message}`);
       return 0;
@@ -264,7 +303,8 @@ export class RebalanceEngine {
   async getVaultIdleUSDC(): Promise<number> {
     try {
       const vaultState = await this.client.fetchVaultAccount(this.vaultAddress);
-      return Number(vaultState.idleAssets || 0);
+      const state = vaultState as Record<string, any>;
+      return Number(state.asset?.totalValue ?? state.idleAssets ?? 0);
     } catch {
       return 0;
     }
@@ -272,14 +312,18 @@ export class RebalanceEngine {
 
   async depositToStrategy(name: string, amount: number): Promise<void> {
     const strategy = VAULT_CONFIG.strategies.find((s) => s.name === name);
-    if (!strategy) throw new Error(`Strategy ${name} not found in config`);
+    if (!strategy || !strategy.address) {
+      throw new RebalanceError(`Strategy ${name} not found or has no address`, "STRATEGY_NOT_FOUND", { name });
+    }
 
-    const depositIx = await this.client.createManagerDepositStrategyIx({
-      vault: this.vaultAddress,
-      strategy: new PublicKey(strategy.address),
-      manager: this.managerKp.publicKey,
-      amount: BigInt(amount),
-    });
+    const depositIx = await this.client.createDepositStrategyIx(
+      { depositAmount: BigInt(amount) } as any,
+      {
+        vault: this.vaultAddress,
+        strategy: new PublicKey(strategy.address),
+        manager: this.managerKp.publicKey,
+      } as any,
+    );
 
     await this.sendOptimisedTx(
       [depositIx],
@@ -289,14 +333,18 @@ export class RebalanceEngine {
 
   async withdrawFromStrategy(name: string, amount: number): Promise<void> {
     const strategy = VAULT_CONFIG.strategies.find((s) => s.name === name);
-    if (!strategy) throw new Error(`Strategy ${name} not found in config`);
+    if (!strategy || !strategy.address) {
+      throw new RebalanceError(`Strategy ${name} not found or has no address`, "STRATEGY_NOT_FOUND", { name });
+    }
 
-    const withdrawIx = await this.client.createManagerWithdrawStrategyIx({
-      vault: this.vaultAddress,
-      strategy: new PublicKey(strategy.address),
-      manager: this.managerKp.publicKey,
-      amount: BigInt(amount),
-    });
+    const withdrawIx = await this.client.createWithdrawStrategyIx(
+      { withdrawAmount: BigInt(amount) } as any,
+      {
+        vault: this.vaultAddress,
+        strategy: new PublicKey(strategy.address),
+        manager: this.managerKp.publicKey,
+      } as any,
+    );
 
     await this.sendOptimisedTx(
       [withdrawIx],
@@ -362,7 +410,7 @@ export class RebalanceEngine {
         return null;
       }
 
-      const quote = await quoteResp.json();
+      const quote = (await quoteResp.json()) as Record<string, any>;
 
       if (!quote || quote.error) {
         logger.warn(`Jupiter quote failed: ${quote?.error}`);
@@ -392,7 +440,7 @@ export class RebalanceEngine {
         return null;
       }
 
-      const swapResult = await swapResp.json();
+      const swapResult = (await swapResp.json()) as Record<string, any>;
 
       if (!swapResult?.swapTransaction) {
         logger.warn("Jupiter swap: no transaction returned");
@@ -401,7 +449,7 @@ export class RebalanceEngine {
 
       // Step 3: Deserialize the real versioned transaction
       const { VersionedTransaction: VTX } = await import("@solana/web3.js");
-      const swapTxBuf = Buffer.from(swapResult.swapTransaction, "base64");
+      const swapTxBuf = Buffer.from(swapResult.swapTransaction as string, "base64");
       const vtx = VTX.deserialize(swapTxBuf);
 
       // Step 4: Sign and send the full versioned transaction directly
@@ -512,12 +560,16 @@ export class RebalanceEngine {
           logger.error(
             `TX failed after ${attempt} attempts [${label}]: ${err.message}`,
           );
-          throw err;
+          throw new RebalanceError(
+            `TX failed: ${label} — ${err.message}`,
+            "TX_FAILED",
+            { label, attempt, originalError: err.message },
+          );
         }
       }
     }
 
-    throw new Error(`TX failed: ${label}`);
+    throw new RebalanceError(`TX failed: ${label}`, "TX_FAILED", { label });
   }
 
   // =================================================================
@@ -531,6 +583,7 @@ export class RebalanceEngine {
   }
 
   stopAllLoops(): void {
+    this.isShuttingDown = true;
     if (this.refreshTimer) clearInterval(this.refreshTimer);
     if (this.rewardTimer) clearInterval(this.rewardTimer);
     logger.info("All rebalance engine loops stopped");

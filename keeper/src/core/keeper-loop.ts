@@ -1,5 +1,6 @@
 import { AgentOrchestrator } from "../execution/agent-orchestrator";
 import { FlashExecutor } from "../execution/flash-executor";
+import bs58 from "bs58";
 // =================================================================
 // Keeper Loop -- Main execution loop with full module integration
 // =================================================================
@@ -21,10 +22,51 @@ import { AIAttestor } from "../attestation/ai-attestation";
 import { AttestationVerifier } from "../attestation/attestation-verifier";
 import { MetricsCollector } from "../monitoring/metrics";
 import { Alerter } from "../monitoring/alerter";
-import { EXECUTION_PARAMS, SIGNAL_THRESHOLDS, RISK_PARAMS, VAULT_CONFIG } from "../config";
+import { EXECUTION_PARAMS, SIGNAL_THRESHOLDS, RISK_PARAMS, VAULT_CONFIG, CLUSTER_ENV } from "../config";
 import { SignalResponse, TradeAction } from "../types";
 import { logger } from "../monitoring/logger";
 import * as fs from "fs";
+
+// ═══ Circuit Breaker (I2) ═══
+class CircuitBreaker {
+  private consecutiveFailures: number = 0;
+  private readonly maxFailures: number;
+  private readonly cooldownMs: number;
+  private openUntil: number = 0;
+
+  constructor(maxFailures: number = 5, cooldownMs: number = 5 * 60 * 1000) {
+    this.maxFailures = maxFailures;
+    this.cooldownMs = cooldownMs;
+  }
+
+  recordSuccess(): void {
+    this.consecutiveFailures = 0;
+  }
+
+  recordFailure(): void {
+    this.consecutiveFailures++;
+    if (this.consecutiveFailures >= this.maxFailures) {
+      this.openUntil = Date.now() + this.cooldownMs;
+      logger.error(
+        `Circuit breaker OPEN after ${this.consecutiveFailures} failures. ` +
+        `Cooling down for ${this.cooldownMs / 1000}s.`,
+      );
+    }
+  }
+
+  isOpen(): boolean {
+    if (this.openUntil > 0 && Date.now() < this.openUntil) {
+      return true;
+    }
+    if (this.openUntil > 0 && Date.now() >= this.openUntil) {
+      // Half-open: reset and allow one attempt
+      this.openUntil = 0;
+      this.consecutiveFailures = 0;
+      logger.info("Circuit breaker HALF-OPEN — allowing next attempt");
+    }
+    return false;
+  }
+}
 
 export class KeeperLoop {
   private signalClient: SignalClient;
@@ -47,10 +89,18 @@ export class KeeperLoop {
   private agentOrchestrator!: AgentOrchestrator;
   private flashExecutor!: FlashExecutor;
 
-
   private connection!: Connection;
   private zetaClient!: ZetaClient;
   private initialized: boolean = false;
+
+  // I2: Circuit breaker for tick failures
+  private circuitBreaker: CircuitBreaker = new CircuitBreaker(5, 5 * 60 * 1000);
+
+  // I4: Rebalance lock to prevent concurrent rebalances
+  private rebalanceLock: boolean = false;
+
+  // I14: Graceful shutdown flag
+  private isShuttingDown: boolean = false;
 
   constructor() {
     this.signalClient = new SignalClient();
@@ -68,28 +118,35 @@ export class KeeperLoop {
       // Setup Solana connection
       this.connection = new Connection(VAULT_CONFIG.rpcUrl, "confirmed");
 
-      // Load manager keypair
+      // Load manager keypair — MUST exist, no ephemeral fallback
       const managerKpPath = VAULT_CONFIG.managerKeypairPath;
-      let managerKp: Keypair;
-      if (fs.existsSync(managerKpPath)) {
-        const raw = fs.readFileSync(managerKpPath, "utf-8");
-        managerKp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(raw)));
-      } else {
-        managerKp = Keypair.generate();
-        logger.warn("Using ephemeral manager keypair -- generate a persistent one for production");
+      if (!fs.existsSync(managerKpPath)) {
+        throw new Error(
+          `FATAL: Manager keypair not found at '${managerKpPath}'. ` +
+          `Generate with: solana-keygen new --no-passphrase -o ${managerKpPath}`,
+        );
       }
+      const raw = fs.readFileSync(managerKpPath, "utf-8");
+      const managerKp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(raw)));
 
-      // Initialize Zeta client
+      // Initialize Zeta client — use env var, not hardcoded mainnet
       const wallet = new Wallet(managerKp);
+      const zetaEnv = CLUSTER_ENV;
       this.zetaClient = new ZetaClient({
         connection: this.connection,
         wallet,
-        env: "mainnet-beta",
+        env: zetaEnv,
       });
       await this.zetaClient.subscribe();
 
       // Initialize execution modules
-      const vaultAddress = new PublicKey(VAULT_CONFIG.vaultAddress || Keypair.generate().publicKey);
+      // Vault address — MUST be configured, no random fallback
+      if (!VAULT_CONFIG.vaultAddress) {
+        throw new Error(
+          "FATAL: VAULT_ADDRESS not configured. Run admin-init-vault.ts first and set VAULT_ADDRESS in .env",
+        );
+      }
+      const vaultAddress = new PublicKey(VAULT_CONFIG.vaultAddress);
 
       this.zetaExecutor = new ZetaExecutor(this.zetaClient);
       this.vaultAllocator = new VaultAllocator(this.connection, managerKp, vaultAddress);
@@ -99,9 +156,9 @@ export class KeeperLoop {
       this.rebalanceEngine = this.vaultAllocator.getRebalanceEngine();
 
       this.agentOrchestrator = new AgentOrchestrator(
-        managerKp.secretKey.toString(),
+        bs58.encode(managerKp.secretKey),
         VAULT_CONFIG.rpcUrl,
-        process.env.OPENAI_API_KEY || "dummy"
+        process.env.OPENAI_API_KEY || ""
       );
       this.flashExecutor = new FlashExecutor(this.connection, managerKp);
 
@@ -131,6 +188,18 @@ export class KeeperLoop {
   }
 
   async tick(): Promise<void> {
+    // I14: Check graceful shutdown
+    if (this.isShuttingDown) {
+      logger.info("Keeper is shutting down — skipping tick");
+      return;
+    }
+
+    // I2: Check circuit breaker
+    if (this.circuitBreaker.isOpen()) {
+      logger.warn("Circuit breaker is OPEN — skipping tick");
+      return;
+    }
+
     const startTime = Date.now();
     logger.info("=== KEEPER TICK START ===");
 
@@ -140,10 +209,16 @@ export class KeeperLoop {
         await this.initialize();
       }
 
+      // I3: DRY_RUN mode check
+      if (EXECUTION_PARAMS.dryRun) {
+        logger.info("[DRY_RUN] Fetching signals only — no on-chain transactions");
+      }
+
       // 1. Check signal server health
       const healthy = await this.signalClient.isHealthy();
       if (!healthy) {
         logger.error("Signal server is down -- skipping tick");
+        this.circuitBreaker.recordFailure();
         return;
       }
 
@@ -152,16 +227,26 @@ export class KeeperLoop {
         const shouldUnwind = await this.healthMonitor.shouldEmergencyUnwind();
         if (shouldUnwind) {
           logger.error("Zeta health critical -- emergency unwind");
-          await this.emergencyUnwind.execute("Zeta health ratio critical");
+          if (!EXECUTION_PARAMS.dryRun) {
+            await this.emergencyUnwind.execute("Zeta health ratio critical");
+          } else {
+            logger.warn("[DRY_RUN] Would trigger emergency unwind");
+          }
           return;
         }
       }
 
       // 3. Fetch risk state from signal server
       const risk = await this.signalClient.getRisk();
+
+      // M3: Check drawdown as percentage of TVL, not raw PnL
       if (risk.breach) {
         logger.warn("Risk breach detected -- reducing positions");
-        await this.handleRiskBreach();
+        if (!EXECUTION_PARAMS.dryRun) {
+          await this.handleRiskBreach();
+        } else {
+          logger.warn("[DRY_RUN] Would handle risk breach");
+        }
         return;
       }
 
@@ -171,7 +256,7 @@ export class KeeperLoop {
         for (const tp of trackedPositions) {
           if (tp.shouldClose) {
             logger.warn(`${tp.asset}: ${tp.closeReason}`);
-            if (this.zetaExecutor) {
+            if (this.zetaExecutor && !EXECUTION_PARAMS.dryRun) {
               const sig = await this.zetaExecutor.closePosition(tp.asset);
               if (sig) {
                 this.positionTracker.recordExit(tp.asset);
@@ -185,6 +270,8 @@ export class KeeperLoop {
                 });
                 await this.alerter.sendTradeAlert(tp.asset, "CLOSE", tp.sizeUsd, tp.closeReason || "stop/TP");
               }
+            } else if (EXECUTION_PARAMS.dryRun) {
+              logger.info(`[DRY_RUN] Would close ${tp.asset}: ${tp.closeReason}`);
             }
           }
         }
@@ -192,6 +279,8 @@ export class KeeperLoop {
 
       // 5. Process each asset for new signals
       for (const asset of EXECUTION_PARAMS.assets) {
+        // I14: Check shutdown between asset processing
+        if (this.isShuttingDown) break;
         try {
           await this.processAsset(asset);
         } catch (err: any) {
@@ -211,10 +300,14 @@ export class KeeperLoop {
       // 7. Update last rebalance
       this.stateManager.setLastRebalance(Date.now());
 
+      // I2: Record success
+      this.circuitBreaker.recordSuccess();
+
       const duration = Date.now() - startTime;
       logger.info(`=== KEEPER TICK COMPLETE (${duration}ms) ===`);
     } catch (err: any) {
       logger.error(`Keeper tick failed: ${err.message}`);
+      this.circuitBreaker.recordFailure();
     }
   }
 
@@ -234,6 +327,12 @@ export class KeeperLoop {
     const riskOk = this.riskChecker.preTradeCheck(action);
     if (!riskOk) {
       logger.warn(`[${asset}] Trade blocked by risk checker: ${action.type}`);
+      return;
+    }
+
+    // I3: DRY_RUN — log but don't execute
+    if (EXECUTION_PARAMS.dryRun) {
+      logger.info(`[DRY_RUN] [${asset}] Would execute: ${action.type} (size: ${action.size}, reason: ${action.reason})`);
       return;
     }
 
@@ -278,79 +377,91 @@ export class KeeperLoop {
   }
 
   private async executeAction(action: TradeAction): Promise<void> {
-    const direction = action.type === "open_long" ? "long" : action.type === "open_short" ? "short" : "close";
+    // I4: Acquire rebalance lock
+    if (this.rebalanceLock) {
+      logger.warn(`Rebalance lock active — skipping ${action.type} ${action.asset}`);
+      return;
+    }
+    this.rebalanceLock = true;
 
-    switch (action.type) {
-      case "open_long":
-      case "open_short": {
-        // Execute on Zeta if available
-        if (this.zetaExecutor) {
-          const oraclePrice = this.zetaExecutor.getOraclePrice(action.asset);
-          const tvl = this.vaultAllocator ? await this.vaultAllocator.getVaultTVL() : 0;
-          const sizeUsd = (tvl / 1e6) * EXECUTION_PARAMS.activeAllocationPct * action.size;
+    try {
+      const direction = action.type === "open_long" ? "long" : action.type === "open_short" ? "short" : "close";
 
-          const txSig = await this.zetaExecutor.openPosition({
+      switch (action.type) {
+        case "open_long":
+        case "open_short": {
+          // Execute on Zeta if available
+          if (this.zetaExecutor) {
+            const oraclePrice = this.zetaExecutor.getOraclePrice(action.asset);
+            const tvl = this.vaultAllocator ? await this.vaultAllocator.getVaultTVL() : 0;
+            const sizeUsd = (tvl / 1e6) * EXECUTION_PARAMS.activeAllocationPct * action.size;
+
+            const txSig = await this.zetaExecutor.openPosition({
+              asset: action.asset,
+              direction: direction as "long" | "short",
+              sizeUsd,
+            });
+
+            // Record attestation
+            this.attestationVerifier?.recordAttestation(txSig, Buffer.from(action.asset));
+
+            // Track position
+            this.positionTracker?.recordEntry(action.asset, oraclePrice, direction);
+
+            // Update delta on signal server
+            const delta = direction === "long" ? action.size : -action.size;
+            await this.signalClient.updateDelta(action.asset, delta);
+
+            // Alert
+            await this.alerter.sendTradeAlert(action.asset, direction, sizeUsd, action.reason);
+          }
+
+          // Always track in state manager
+          this.stateManager.addPosition({
             asset: action.asset,
-            direction: direction as "long" | "short",
-            sizeUsd,
+            side: direction as "long" | "short",
+            size: action.size,
+            entryPrice: this.zetaExecutor?.getOraclePrice(action.asset) || 0,
+            currentPrice: 0,
+            unrealizedPnl: 0,
+            leverage: 1,
+            entryTimestamp: Date.now(),
           });
-
-          // Record attestation
-          this.attestationVerifier?.recordAttestation(txSig, Buffer.from(action.asset));
-
-          // Track position
-          this.positionTracker?.recordEntry(action.asset, oraclePrice, direction);
-
-          // Update delta on signal server
-          const delta = direction === "long" ? action.size : -action.size;
-          await this.signalClient.updateDelta(action.asset, delta);
-
-          // Alert
-          await this.alerter.sendTradeAlert(action.asset, direction, sizeUsd, action.reason);
+          logger.info(`Opened ${direction} ${action.asset} (size: ${(action.size * 100).toFixed(1)}%)`);
+          break;
         }
 
-        // Always track in state manager
-        this.stateManager.addPosition({
-          asset: action.asset,
-          side: direction as "long" | "short",
-          size: action.size,
-          entryPrice: this.zetaExecutor?.getOraclePrice(action.asset) || 0,
-          currentPrice: 0,
-          unrealizedPnl: 0,
-          leverage: 1,
-          entryTimestamp: Date.now(),
-        });
-        logger.info(`Opened ${direction} ${action.asset} (size: ${(action.size * 100).toFixed(1)}%)`);
-        break;
+        case "close": {
+          if (this.zetaExecutor) {
+            await this.zetaExecutor.closePosition(action.asset);
+            this.positionTracker?.recordExit(action.asset);
+            await this.signalClient.updateDelta(action.asset, 0);
+          }
+
+          const closed = this.stateManager.removePosition(action.asset);
+          if (closed) {
+            logger.info(`Closed ${closed.side} ${action.asset} (PnL: ${closed.unrealizedPnl.toFixed(2)})`);
+            this.stateManager.recordTradePnl(closed.unrealizedPnl);
+            this.metrics.recordTrade({
+              timestamp: Date.now(),
+              asset: action.asset,
+              direction: closed.side,
+              pnlUsd: closed.unrealizedPnl,
+              pnlPct: closed.entryPrice > 0 ? closed.unrealizedPnl / (closed.size * closed.entryPrice) : 0,
+              durationMs: Date.now() - closed.entryTimestamp,
+            });
+            await this.alerter.sendTradeAlert(action.asset, "CLOSE", closed.size, action.reason);
+          }
+          break;
+        }
+
+        case "reduce":
+          logger.info(`Reduced position ${action.asset}`);
+          break;
       }
-
-      case "close": {
-        if (this.zetaExecutor) {
-          await this.zetaExecutor.closePosition(action.asset);
-          this.positionTracker?.recordExit(action.asset);
-          await this.signalClient.updateDelta(action.asset, 0);
-        }
-
-        const closed = this.stateManager.removePosition(action.asset);
-        if (closed) {
-          logger.info(`Closed ${closed.side} ${action.asset} (PnL: ${closed.unrealizedPnl.toFixed(2)})`);
-          this.stateManager.recordTradePnl(closed.unrealizedPnl);
-          this.metrics.recordTrade({
-            timestamp: Date.now(),
-            asset: action.asset,
-            direction: closed.side,
-            pnlUsd: closed.unrealizedPnl,
-            pnlPct: closed.entryPrice > 0 ? closed.unrealizedPnl / (closed.size * closed.entryPrice) : 0,
-            durationMs: Date.now() - closed.entryTimestamp,
-          });
-          await this.alerter.sendTradeAlert(action.asset, "CLOSE", closed.size, action.reason);
-        }
-        break;
-      }
-
-      case "reduce":
-        logger.info(`Reduced position ${action.asset}`);
-        break;
+    } finally {
+      // I4: Always release rebalance lock
+      this.rebalanceLock = false;
     }
   }
 
@@ -378,10 +489,14 @@ export class KeeperLoop {
   getMetrics(): MetricsCollector { return this.metrics; }
   getAlerter(): Alerter { return this.alerter; }
 
+  // I14: Graceful shutdown with flag
   async shutdown(): Promise<void> {
     logger.info("Shutting down keeper...");
+    this.isShuttingDown = true;
     this.rebalanceEngine?.stopAllLoops();
     if (this.zetaClient) await this.zetaClient.unsubscribe();
+    // Persist state before exit
+    this.stateManager.persistState();
     logger.info("Keeper shutdown complete");
   }
 }

@@ -10,7 +10,7 @@ import {
   Ed25519Program,
 } from "@solana/web3.js";
 import * as fs from "fs";
-import * as crypto from "crypto";
+import nacl from "tweetnacl";
 import { VAULT_CONFIG } from "../config";
 import { logger } from "../monitoring/logger";
 
@@ -19,17 +19,17 @@ export class AIAttestor {
 
   constructor() {
     const keypairPath = VAULT_CONFIG.agentKeypairPath;
-    if (fs.existsSync(keypairPath)) {
-      const raw = fs.readFileSync(keypairPath, "utf-8");
-      this.agentKeypair = Keypair.fromSecretKey(
-        Uint8Array.from(JSON.parse(raw)),
+    if (!fs.existsSync(keypairPath)) {
+      throw new Error(
+        `FATAL: Agent keypair not found at '${keypairPath}'. ` +
+        `Generate with: solana-keygen new --no-passphrase -o ${keypairPath}`,
       );
-      logger.info(`AI Agent pubkey: ${this.agentKeypair.publicKey.toString()}`);
-    } else {
-      // Generate ephemeral keypair for testing
-      this.agentKeypair = Keypair.generate();
-      logger.warn("Using ephemeral agent keypair — generate a persistent one for production");
     }
+    const raw = fs.readFileSync(keypairPath, "utf-8");
+    this.agentKeypair = Keypair.fromSecretKey(
+      Uint8Array.from(JSON.parse(raw)),
+    );
+    logger.info(`AI Agent pubkey: ${this.agentKeypair.publicKey.toString()}`);
   }
 
   /**
@@ -52,19 +52,14 @@ export class AIAttestor {
   }
 
   /**
-   * Sign arbitrary message with agent keypair.
+   * Sign arbitrary message with agent keypair using Ed25519 (nacl).
    */
   signMessage(message: Buffer): Buffer {
-    const signature = crypto.sign(
-      null,
-      message,
-      {
-        key: Buffer.from(this.agentKeypair.secretKey),
-        format: "der",
-        type: "pkcs8",
-      },
+    const signature = nacl.sign.detached(
+      new Uint8Array(message),
+      this.agentKeypair.secretKey,
     );
-    return signature;
+    return Buffer.from(signature);
   }
 
   /**

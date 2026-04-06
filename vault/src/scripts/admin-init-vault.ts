@@ -6,6 +6,7 @@
 
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
 import {
   loadKeypair,
   sendAndConfirmOptimisedTx,
@@ -21,7 +22,6 @@ import {
   PERFORMANCE_FEE_BPS,
   MANAGEMENT_FEE_BPS,
 } from "../variables";
-import { USDC_MINT } from "../constants";
 
 async function main() {
   logStep("Initializing Vault", { rpc: RPC_URL });
@@ -49,19 +49,23 @@ async function main() {
   const initVaultIx = await client.createInitializeVaultIx(
     {
       config: {
-        maxCap: BigInt("10000000000000"), // 10M USDC
-        startDate: BigInt(Math.floor(Date.now() / 1000)),
-        endDate: BigInt(Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60), // 1 year
-        performanceFeeBps: PERFORMANCE_FEE_BPS,
-        managementFeeBps: MANAGEMENT_FEE_BPS,
-        withdrawalWaitingPeriod: BigInt(0),
+        maxCap: new BN("10000000000000"), // 10M USDC
+        startAtTs: new BN(Math.floor(Date.now() / 1000)),
+        lockedProfitDegradationDuration: new BN(21600), // 6 hours
+        managerPerformanceFee: PERFORMANCE_FEE_BPS,     // 10% (1000 bps)
+        adminPerformanceFee: PERFORMANCE_FEE_BPS,        // 10% (1000 bps)
+        managerManagementFee: MANAGEMENT_FEE_BPS,        // 2% (200 bps)
+        adminManagementFee: MANAGEMENT_FEE_BPS,          // 2% (200 bps)
       },
+      name: "Ranger AI Vault",
+      description: "AI-driven DeFi yield vault on Solana",
     },
     {
-      vault: vaultKp.publicKey,
+      vault: vaultKp,
+      vaultAssetMint: assetMint,
       admin: adminKp.publicKey,
       manager: managerKp.publicKey,
-      assetMint,
+      payer: adminKp.publicKey,
     },
   );
 
@@ -79,11 +83,11 @@ async function main() {
 
   logSuccess("Vault created!");
   console.log("\n══════════════════════════════════════════");
-  console.log("🏦 VAULT ADDRESS:", vaultKp.publicKey.toString());
+  console.log("VAULT ADDRESS:", vaultKp.publicKey.toString());
   console.log("══════════════════════════════════════════");
-  console.log("\n⚠️  IMPORTANT: Update VAULT_ADDRESS in your .env file:");
+  console.log("\n[IMPORTANT] Update VAULT_ADDRESS in your .env file:");
   console.log(`   VAULT_ADDRESS=${vaultKp.publicKey.toString()}`);
-  console.log("\n📋 Transaction:", sig);
+  console.log("\nTransaction:", sig);
 }
 
 main().catch((err) => {

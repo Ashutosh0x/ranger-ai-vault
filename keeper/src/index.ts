@@ -9,13 +9,19 @@ import { logger } from "./monitoring/logger";
 
 async function main() {
   logger.info("═══════════════════════════════════════════");
-  logger.info("🤖 RANGER AI VAULT — KEEPER BOT");
+  logger.info("RANGER AI VAULT -- KEEPER BOT");
   logger.info("═══════════════════════════════════════════");
   logger.info(`Signal server: ${EXECUTION_PARAMS.signalServerUrl}`);
   logger.info(`Cron interval: ${EXECUTION_PARAMS.cronInterval}`);
   logger.info(`Assets: ${EXECUTION_PARAMS.assets.join(", ")}`);
   logger.info(`Floor allocation: ${EXECUTION_PARAMS.floorAllocationPct * 100}%`);
   logger.info(`Active allocation: ${EXECUTION_PARAMS.activeAllocationPct * 100}%`);
+  logger.info(`Zeta env: ${process.env.SOLANA_CLUSTER || process.env.ZETA_ENV || "devnet"}`);
+
+  // I3: DRY_RUN mode indicator
+  if (EXECUTION_PARAMS.dryRun) {
+    logger.warn("DRY_RUN mode is ENABLED — no on-chain transactions will be executed");
+  }
 
   const keeper = new KeeperLoop();
 
@@ -38,20 +44,18 @@ async function main() {
     "UTC",
   );
 
-  logger.info("✅ Keeper started — running every 15 minutes");
+  logger.info("[OK] Keeper started -- running every 15 minutes");
 
-  // Graceful shutdown
-  process.on("SIGINT", () => {
-    logger.info("Shutting down keeper...");
+  // I14: Graceful shutdown — call keeper.shutdown() to persist state and clean up
+  const gracefulShutdown = async (signal: string) => {
+    logger.info(`Received ${signal} — initiating graceful shutdown...`);
     job.stop();
+    await keeper.shutdown();
     process.exit(0);
-  });
+  };
 
-  process.on("SIGTERM", () => {
-    logger.info("Shutting down keeper...");
-    job.stop();
-    process.exit(0);
-  });
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 }
 
 main().catch((err) => {

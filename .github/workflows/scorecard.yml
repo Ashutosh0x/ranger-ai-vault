@@ -1,39 +1,28 @@
+# ===============================================================================
+# Scorecard Supply-Chain Security (Lightweight Wrapper)
+# ===============================================================================
+# Delegates to security-audit.yml Layer 8 (OSSF Scorecard).
+# This standalone wrapper ensures scorecard runs even if the audit
+# pipeline is modified or disabled. Staggered schedule (06:00 UTC)
+# avoids overlap with the main audit pipeline (00:00 UTC).
+
 name: Scorecard supply-chain security
+
 on:
   push:
     branches: [ "main" ]
-
-permissions: read-all
+  schedule:
+    - cron: '0 6 * * 1'
 
 jobs:
-  analysis:
-    name: Scorecard analysis
-    runs-on: ubuntu-latest
+  # Delegate to the comprehensive security audit pipeline
+  security-audit:
+    name: "Full Security Audit (includes Scorecard L8)"
+    uses: ./.github/workflows/security-audit.yml
     permissions:
+      contents: read
       security-events: write
+      actions: read
+      pull-requests: write
       id-token: write
-
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: "Run analysis"
-        uses: ossf/scorecard-action@v2.3.1
-        with:
-          results_file: results.sarif
-          results_format: sarif
-          publish_results: true
-
-      - name: "Upload artifact"
-        uses: actions/upload-artifact@v4
-        with:
-          name: SARIF file
-          path: results.sarif
-          retention-days: 5
-
-      - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: results.sarif
+    secrets: inherit

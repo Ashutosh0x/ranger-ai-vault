@@ -1,5 +1,5 @@
 # .github/workflows/ci-vault.yml
-name: "🏦 Vault Scripts CI"
+name: "Vault Scripts CI"
 
 on:
   workflow_call:
@@ -32,37 +32,37 @@ jobs:
       - name: TypeScript compile
         run: |
           npx tsc --noEmit
-          echo "✅ All vault scripts compile"
+          echo "[PASS] All vault scripts compile"
 
       - name: Validate helper.ts has compute budget (FIX 5)
         run: |
-          echo "═══ Checking helper.ts for compute budget (FIX #5) ═══"
+          echo "=== Checking helper.ts for compute budget (FIX #5) ==="
 
           if grep -q "ComputeBudgetProgram" src/helper.ts; then
-            echo "✅ ComputeBudgetProgram found in helper.ts"
+            echo "[PASS] ComputeBudgetProgram found in helper.ts"
           else
-            echo "❌ helper.ts is MISSING ComputeBudgetProgram!"
+            echo "[FAIL] helper.ts is MISSING ComputeBudgetProgram!"
             echo "   Every Solana TX needs explicit compute budget."
             exit 1
           fi
 
           if grep -q "setComputeUnitLimit" src/helper.ts; then
-            echo "✅ setComputeUnitLimit found"
+            echo "[PASS] setComputeUnitLimit found"
           else
-            echo "❌ setComputeUnitLimit MISSING"
+            echo "[FAIL] setComputeUnitLimit MISSING"
             exit 1
           fi
 
           if grep -q "setComputeUnitPrice" src/helper.ts; then
-            echo "✅ setComputeUnitPrice found"
+            echo "[PASS] setComputeUnitPrice found"
           else
-            echo "❌ setComputeUnitPrice MISSING"
+            echo "[FAIL] setComputeUnitPrice MISSING"
             exit 1
           fi
 
       - name: Validate variables.ts structure
         run: |
-          echo "═══ Checking variables.ts ═══"
+          echo "=== Checking variables.ts ==="
 
           REQUIRED=(
             "ADMIN_KEYPAIR_PATH\|adminKeypairPath\|admin"
@@ -73,31 +73,31 @@ jobs:
 
           for pattern in "${REQUIRED[@]}"; do
             if grep -qiE "$pattern" src/variables.ts; then
-              echo "✅ Found: $pattern"
+              echo "[PASS] Found: $pattern"
             else
-              echo "⚠️ May be missing: $pattern"
+              echo "[WARN] May be missing: $pattern"
             fi
           done
 
       - name: Validate constants completeness
         run: |
-          echo "═══ Checking constants ═══"
+          echo "=== Checking constants ==="
 
           if grep -q "EBN93eXs5fHGBABuajQqdsKRkCgaqtJa8vEFD6vKXiP" src/constants/drift.ts; then
-            echo "✅ Drift adaptor address present"
+            echo "[PASS] Drift adaptor address present"
           else
-            echo "⚠️ Drift adaptor address not found in constants/drift.ts"
+            echo "[WARN] Drift adaptor address not found in constants/drift.ts"
           fi
 
           if grep -q "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" src/constants/tokens.ts; then
-            echo "✅ USDC mint address present"
+            echo "[PASS] USDC mint address present"
           else
-            echo "⚠️ USDC mint address not found in constants/tokens.ts"
+            echo "[WARN] USDC mint address not found in constants/tokens.ts"
           fi
 
       - name: Count and list all scripts
         run: |
-          echo "═══ Vault Scripts Inventory ═══"
+          echo "=== Vault Scripts Inventory ==="
           echo ""
           ADMIN=$(ls src/scripts/admin-*.ts 2>/dev/null | wc -l)
           MANAGER=$(ls src/scripts/manager-*.ts 2>/dev/null | wc -l)
@@ -109,7 +109,7 @@ jobs:
           echo "Manager scripts: $MANAGER (expected: 3)"
           echo "User scripts:    $USER (expected: 3)"
           echo "Query scripts:   $QUERY (expected: 3)"
-          echo "─────────────────────────"
+          echo "-------------------------"
           echo "Total:           $TOTAL (expected: 15)"
           echo ""
 
@@ -117,9 +117,9 @@ jobs:
 
           if [ $TOTAL -lt 15 ]; then
             echo ""
-            echo "⚠️ Missing $(( 15 - TOTAL )) vault scripts"
+            echo "[WARN] Missing $(( 15 - TOTAL )) vault scripts"
             exit 1
           fi
 
           echo ""
-          echo "✅ All 15 vault scripts present"
+          echo "[PASS] All 15 vault scripts present"

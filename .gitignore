@@ -12,6 +12,10 @@ dist/
 build/
 *.js.map
 
+# ═══ Rust build outputs (I9) ═══
+target/
+target_cli/
+
 # ═══ Environment ═══
 .env
 .env.local
@@ -55,3 +59,6 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+# ═══ Keeper state ═══
+keeper/state/

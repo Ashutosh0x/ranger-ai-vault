@@ -15,7 +15,7 @@ import {
   logSuccess,
   logError,
 } from "../helper";
-import { RPC_URL, ADMIN_KEYPAIR_PATH, VAULT_ADDRESS } from "../variables";
+import { RPC_URL, ADMIN_KEYPAIR_PATH, VAULT_ADDRESS, MANAGER_KEYPAIR_PATH } from "../variables";
 import {
   ZETA_ADAPTOR_PROGRAM_ID,
   KAMINO_ADAPTOR_PROGRAM_ID,
@@ -44,6 +44,7 @@ async function main() {
   const connection = new Connection(RPC_URL, "confirmed");
   const client = new VoltrClient(connection);
   const adminKp = loadKeypair(ADMIN_KEYPAIR_PATH);
+  const managerKp = loadKeypair(MANAGER_KEYPAIR_PATH);
   const vault = new PublicKey(VAULT_ADDRESS);
 
   // Define strategies
@@ -93,9 +94,10 @@ async function main() {
         instructionDiscriminator: Buffer.alloc(8),
       },
       {
+        payer: adminKp.publicKey,
         vault,
+        manager: managerKp.publicKey,
         strategy: strategyKp.publicKey,
-        admin: adminKp.publicKey,
         adaptorProgram: strategyDef.adaptorProgram,
         remainingAccounts: strategyDef.remainingAccounts,
       },
@@ -113,7 +115,7 @@ async function main() {
   }
 
   console.log("\n══════════════════════════════════════════");
-  console.log("📋 STRATEGY ADDRESSES (update .env):");
+  console.log("STRATEGY ADDRESSES (update .env):");
   console.log(`   KAMINO_STRATEGY_ADDRESS=${strategyAddresses[0]}`);
   console.log(`   ZETA_LEND_STRATEGY_ADDRESS=${strategyAddresses[1]}`);
   console.log(`   ZETA_PERPS_STRATEGY_ADDRESS=${strategyAddresses[2]}`);

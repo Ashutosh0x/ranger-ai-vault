@@ -50,7 +50,7 @@ export class ZetaHealthMonitor {
     const isAtRisk = health < this.HEALTH_WARNING || leverage > this.MAX_LEVERAGE;
 
     if (riskLevel === "critical" || riskLevel === "liquidation") {
-      logger.error(`DRIFT HEALTH ${riskLevel.toUpperCase()} -- health=${health}, leverage=${leverage.toFixed(2)}x`);
+      logger.error(`ZETA HEALTH ${riskLevel.toUpperCase()} -- health=${health}, leverage=${leverage.toFixed(2)}x`);
     } else if (riskLevel === "warning") {
       logger.warn(`Zeta health warning -- health=${health}, leverage=${leverage.toFixed(2)}x`);
     } else {

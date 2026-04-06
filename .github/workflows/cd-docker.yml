@@ -1,4 +1,4 @@
-name: 🐳 CD — Docker Build & Push
+name: CD - Docker Build & Push
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-push:
-    name: Build & Push — ${{ matrix.service }}
+    name: Build & Push - ${{ matrix.service }}
     runs-on: ubuntu-latest
     strategy:
       matrix:

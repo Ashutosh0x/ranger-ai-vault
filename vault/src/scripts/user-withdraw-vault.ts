@@ -5,6 +5,8 @@
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
+import { TOKEN_PROGRAM_ID, getMint } from "@solana/spl-token";
 import {
   loadKeypair,
   sendAndConfirmOptimisedTx,
@@ -12,7 +14,7 @@ import {
   logSuccess,
   logError,
 } from "../helper";
-import { RPC_URL, USER_KEYPAIR_PATH, VAULT_ADDRESS } from "../variables";
+import { RPC_URL, USER_KEYPAIR_PATH, VAULT_ADDRESS, ASSET_MINT_ADDRESS } from "../variables";
 
 async function main() {
   if (!VAULT_ADDRESS) {
@@ -37,11 +39,17 @@ async function main() {
   const client = new VoltrClient(connection);
   const userKp = loadKeypair(USER_KEYPAIR_PATH);
   const vault = new PublicKey(VAULT_ADDRESS);
+  const vaultAssetMint = new PublicKey(ASSET_MINT_ADDRESS);
 
   // Fetch vault state to estimate USDC output
   const vaultState = await client.fetchVaultAccount(vault);
-  const totalShares = Number(vaultState.totalShares);
-  const totalAssets = Number(vaultState.totalAssets);
+  const totalAssets = Number((vaultState as Record<string, any>).asset?.totalValue ?? 0);
+
+  // Get LP supply from the LP mint
+  const lpMint = client.findVaultLpMint(vault);
+  const lpMintInfo = await getMint(connection, lpMint);
+  const totalShares = Number(lpMintInfo.supply);
+
   const navPerShare = totalShares > 0 ? totalAssets / totalShares : 1;
   const estimatedUsdc = (sharesAmount * navPerShare) / 1e6;
 
@@ -51,13 +59,17 @@ async function main() {
     estimatedUsdc: estimatedUsdc.toFixed(2),
   });
 
-  const withdrawIx = await client.createUserWithdrawIx(
+  const withdrawIx = await client.createWithdrawVaultIx(
     {
-      shares: BigInt(sharesAmount),
+      amount: new BN(sharesAmount),
+      isAmountInLp: true,
+      isWithdrawAll: false,
     },
     {
+      userAuthority: userKp.publicKey,
       vault,
-      user: userKp.publicKey,
+      vaultAssetMint,
+      assetTokenProgram: TOKEN_PROGRAM_ID,
     },
   );
 

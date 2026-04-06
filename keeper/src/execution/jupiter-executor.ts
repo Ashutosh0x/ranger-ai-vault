@@ -25,6 +25,12 @@ const ASSET_MINT_MAP: Record<string, string> = {
   "ETH-PERP": ETH_MINT,
 };
 
+const ASSET_DECIMALS_MAP: Record<string, number> = {
+  "SOL-PERP": 9,
+  "BTC-PERP": 8,
+  "ETH-PERP": 8,
+};
+
 export class JupiterExecutor {
   private connection: Connection;
   private walletKp: Keypair;
@@ -72,6 +78,38 @@ export class JupiterExecutor {
   }
 
   /**
+   * H7: Get spot token balance for an asset in the manager wallet.
+   * Used by EmergencyUnwind step 2 to check actual spot holdings.
+   */
+  async getSpotBalance(asset: string): Promise<number> {
+    const mint = ASSET_MINT_MAP[asset];
+    if (!mint) return 0;
+
+    try {
+      // For native SOL, check lamport balance
+      if (mint === SOL_MINT) {
+        const balance = await this.connection.getBalance(this.walletKp.publicKey);
+        // Reserve 0.05 SOL for fees
+        const usableBalance = Math.max(0, balance - 50_000_000);
+        return usableBalance / 1e9;
+      }
+
+      // For SPL tokens, find the ATA
+      const { getAssociatedTokenAddress } = await import("@solana/spl-token");
+      const ata = await getAssociatedTokenAddress(
+        new PublicKey(mint),
+        this.walletKp.publicKey,
+      );
+      const tokenBalance = await this.connection.getTokenAccountBalance(ata);
+      const decimals = ASSET_DECIMALS_MAP[asset] || 9;
+      return Number(tokenBalance.value.amount) / (10 ** decimals);
+    } catch {
+      // Token account doesn't exist = 0 balance
+      return 0;
+    }
+  }
+
+  /**
    * Core swap execution via Jupiter V6 API
    */
   private async executeSwap(
@@ -95,7 +133,7 @@ export class JupiterExecutor {
         `Jupiter quote failed: ${quoteResp.status} ${await quoteResp.text()}`,
       );
     }
-    const quote = await quoteResp.json();
+    const quote = (await quoteResp.json()) as Record<string, any>;
 
     if (quote.error) {
       throw new Error(`Jupiter quote error: ${quote.error}`);
@@ -120,7 +158,8 @@ export class JupiterExecutor {
       );
     }
 
-    const { swapTransaction } = await swapResp.json();
+    const swapResult = (await swapResp.json()) as Record<string, any>;
+    const swapTransaction = swapResult.swapTransaction as string | undefined;
     if (!swapTransaction) {
       throw new Error("Jupiter returned no swap transaction");
     }

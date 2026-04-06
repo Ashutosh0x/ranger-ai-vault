@@ -1,5 +1,5 @@
 # .github/workflows/ci-signal-engine.yml
-name: "🦀 Signal Engine RS CI"
+name: "Signal Engine RS CI"
 
 on:
   workflow_call:

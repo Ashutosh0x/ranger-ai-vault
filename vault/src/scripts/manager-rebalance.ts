@@ -6,6 +6,8 @@
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
   loadKeypair,
   sendAndConfirmOptimisedTx,
@@ -19,6 +21,7 @@ import {
   VAULT_ADDRESS,
   KAMINO_STRATEGY_ADDRESS,
   ZETA_PERPS_STRATEGY_ADDRESS,
+  ASSET_MINT_ADDRESS,
 } from "../variables";
 
 async function main() {
@@ -49,10 +52,11 @@ async function main() {
   const client = new VoltrClient(connection);
   const managerKp = loadKeypair(MANAGER_KEYPAIR_PATH);
   const vault = new PublicKey(VAULT_ADDRESS);
+  const vaultAssetMint = new PublicKey(ASSET_MINT_ADDRESS);
 
   // Fetch current vault state
   const vaultState = await client.fetchVaultAccount(vault);
-  const totalAssets = Number(vaultState.totalAssets);
+  const totalAssets = Number((vaultState as Record<string, any>).asset?.totalValue ?? 0);
 
   logStep("Current vault state", {
     totalAssets: totalAssets / 1e6,
@@ -66,12 +70,15 @@ async function main() {
   // Step 1: Withdraw everything from both strategies
   if (KAMINO_STRATEGY_ADDRESS) {
     try {
-      const withdrawKaminoIx = await client.createManagerWithdrawStrategyIx(
-        { amount: BigInt(totalAssets) }, // Withdraw max
+      const withdrawKaminoIx = await client.createWithdrawStrategyIx(
+        { withdrawAmount: new BN(totalAssets) }, // Withdraw max
         {
           vault,
           strategy: new PublicKey(KAMINO_STRATEGY_ADDRESS),
           manager: managerKp.publicKey,
+          vaultAssetMint,
+          assetTokenProgram: TOKEN_PROGRAM_ID,
+          remainingAccounts: [],
         },
       );
       await sendAndConfirmOptimisedTx(connection, [withdrawKaminoIx], [managerKp]);
@@ -83,12 +90,15 @@ async function main() {
 
   if (ZETA_PERPS_STRATEGY_ADDRESS) {
     try {
-      const withdrawZetaIx = await client.createManagerWithdrawStrategyIx(
-        { amount: BigInt(totalAssets) },
+      const withdrawZetaIx = await client.createWithdrawStrategyIx(
+        { withdrawAmount: new BN(totalAssets) },
         {
           vault,
           strategy: new PublicKey(ZETA_PERPS_STRATEGY_ADDRESS),
           manager: managerKp.publicKey,
+          vaultAssetMint,
+          assetTokenProgram: TOKEN_PROGRAM_ID,
+          remainingAccounts: [],
         },
       );
       await sendAndConfirmOptimisedTx(connection, [withdrawZetaIx], [managerKp]);
@@ -100,12 +110,15 @@ async function main() {
 
   // Step 2: Re-deposit at new allocations
   if (KAMINO_STRATEGY_ADDRESS && targetKamino > 0) {
-    const depositKaminoIx = await client.createManagerDepositStrategyIx(
-      { amount: BigInt(targetKamino) },
+    const depositKaminoIx = await client.createDepositStrategyIx(
+      { depositAmount: new BN(targetKamino) },
       {
         vault,
         strategy: new PublicKey(KAMINO_STRATEGY_ADDRESS),
         manager: managerKp.publicKey,
+        vaultAssetMint,
+        assetTokenProgram: TOKEN_PROGRAM_ID,
+        remainingAccounts: [],
       },
     );
     await sendAndConfirmOptimisedTx(connection, [depositKaminoIx], [managerKp]);
@@ -113,12 +126,15 @@ async function main() {
   }
 
   if (ZETA_PERPS_STRATEGY_ADDRESS && targetZeta > 0) {
-    const depositZetaIx = await client.createManagerDepositStrategyIx(
-      { amount: BigInt(targetZeta) },
+    const depositZetaIx = await client.createDepositStrategyIx(
+      { depositAmount: new BN(targetZeta) },
       {
         vault,
         strategy: new PublicKey(ZETA_PERPS_STRATEGY_ADDRESS),
         manager: managerKp.publicKey,
+        vaultAssetMint,
+        assetTokenProgram: TOKEN_PROGRAM_ID,
+        remainingAccounts: [],
       },
     );
     await sendAndConfirmOptimisedTx(connection, [depositZetaIx], [managerKp]);

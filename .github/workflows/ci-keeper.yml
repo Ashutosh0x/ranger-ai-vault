@@ -1,5 +1,5 @@
 # .github/workflows/ci-keeper.yml
-name: "🤖 Keeper CI"
+name: "Keeper CI"
 
 on:
   workflow_call:
@@ -36,12 +36,12 @@ jobs:
 
           if [ $TSC_EXIT -ne 0 ]; then
             echo ""
-            echo "❌ TypeScript compilation errors found"
+            echo "[FAIL] TypeScript compilation errors found"
             echo "Run 'npx tsc --noEmit' locally to see full output"
             exit 1
           fi
 
-          echo "✅ TypeScript compilation passed"
+          echo "[PASS] TypeScript compilation passed"
 
       - name: Check all imports resolve
         env:
@@ -49,26 +49,26 @@ jobs:
           SIGNAL_SERVER_URL: "http://localhost:8080"
           HELIUS_RPC_URL: "https://api.devnet.solana.com"
         run: |
-          echo "═══ Validating import graph ═══"
+          echo "=== Validating import graph ==="
 
           ERRORS=0
           for f in $(find src -name "*.ts" -not -name "*.test.ts" -not -name "*.d.ts"); do
             npx ts-node --transpile-only -e "require('./$f')" 2>/dev/null
             if [ $? -ne 0 ]; then
-              echo "❌ Import error in: $f"
+              echo "[FAIL] Import error in: $f"
               ERRORS=$((ERRORS + 1))
             else
-              echo "✅ $f"
+              echo "[PASS] $f"
             fi
           done
 
           if [ $ERRORS -gt 0 ]; then
             echo ""
-            echo "❌ $ERRORS files have import errors"
+            echo "[FAIL] $ERRORS files have import errors"
             exit 1
           fi
 
-          echo "✅ All imports resolve"
+          echo "[PASS] All imports resolve"
 
   unit-tests:
     name: "Unit Tests"
@@ -130,66 +130,66 @@ jobs:
           SIGNAL_SERVER_URL: "http://localhost:8080"
           HELIUS_RPC_URL: "https://api.devnet.solana.com"
         run: |
-          echo "═══ Testing full keeper import chain ═══"
+          echo "=== Testing full keeper import chain ==="
           npx ts-node -e "
           console.log('Testing imports...');
 
           // Core
           const { SignalClient } = require('./src/core/signal-client');
-          console.log('✅ signal-client');
+          console.log('[PASS] signal-client');
 
           const { StateManager } = require('./src/core/state-manager');
-          console.log('✅ state-manager');
+          console.log('[PASS] state-manager');
 
           const { RebalanceEngine } = require('./src/core/rebalance-engine');
-          console.log('✅ rebalance-engine');
+          console.log('[PASS] rebalance-engine');
 
           // Execution
           const { DriftExecutor } = require('./src/execution/drift-executor');
-          console.log('✅ drift-executor');
+          console.log('[PASS] drift-executor');
 
           const { VaultAllocator } = require('./src/execution/vault-allocator');
-          console.log('✅ vault-allocator');
+          console.log('[PASS] vault-allocator');
 
           const { JupiterExecutor } = require('./src/execution/jupiter-executor');
-          console.log('✅ jupiter-executor');
+          console.log('[PASS] jupiter-executor');
 
           const { EmergencyUnwind } = require('./src/execution/emergency-unwind');
-          console.log('✅ emergency-unwind');
+          console.log('[PASS] emergency-unwind');
 
           // Attestation
           const { AIAttestation } = require('./src/attestation/ai-attestation');
-          console.log('✅ ai-attestation');
+          console.log('[PASS] ai-attestation');
 
           const { AttestationVerifier } = require('./src/attestation/attestation-verifier');
-          console.log('✅ attestation-verifier');
+          console.log('[PASS] attestation-verifier');
 
           // Risk
           const { RiskChecker } = require('./src/risk/risk-checker');
-          console.log('✅ risk-checker');
+          console.log('[PASS] risk-checker');
 
           const { PositionTracker } = require('./src/risk/position-tracker');
-          console.log('✅ position-tracker');
+          console.log('[PASS] position-tracker');
 
           const { DriftHealthMonitor } = require('./src/risk/drift-health-monitor');
-          console.log('✅ drift-health-monitor');
+          console.log('[PASS] drift-health-monitor');
 
           // Monitoring
           const { logger } = require('./src/monitoring/logger');
-          console.log('✅ logger');
+          console.log('[PASS] logger');
 
           const { MetricsCollector } = require('./src/monitoring/metrics');
-          console.log('✅ metrics');
+          console.log('[PASS] metrics');
 
           const { Alerter } = require('./src/monitoring/alerter');
-          console.log('✅ alerter');
+          console.log('[PASS] alerter');
 
           // Config
           const { RISK_PARAMS, EXECUTION_PARAMS, VAULT_CONFIG } = require('./src/config');
-          console.log('✅ config');
+          console.log('[PASS] config');
 
           console.log('');
-          console.log('═══ All 16 keeper modules import successfully ═══');
+          console.log('=== All 16 keeper modules import successfully ===');
           " 2>&1
 
   dry-run:
@@ -218,8 +218,8 @@ jobs:
           timeout 15 npx ts-node src/index.ts || EXIT_CODE=$?
 
           if [ "${EXIT_CODE:-0}" = "124" ] || [ "${EXIT_CODE:-0}" = "0" ]; then
-            echo "✅ Keeper started successfully (dry run)"
+            echo "[PASS] Keeper started successfully (dry run)"
           else
-            echo "❌ Keeper crashed on startup (exit code: $EXIT_CODE)"
+            echo "[FAIL] Keeper crashed on startup (exit code: $EXIT_CODE)"
             exit 1
           fi

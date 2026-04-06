@@ -1,4 +1,4 @@
-name: 🌐 CD — Dashboard → Vercel
+name: CD - Dashboard to Vercel
 
 on:
   push:

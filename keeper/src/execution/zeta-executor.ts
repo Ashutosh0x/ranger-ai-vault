@@ -1,6 +1,12 @@
 // =================================================================
 // Zeta Executor -- Opens/closes perp positions on Zeta protocol
 // This is the file that actually TRADES on-chain
+//
+// M2: Requires @zetamarkets/sdk ^1.64.0
+// Exports used: ZetaClient, User, PositionDirection, OrderType,
+// MarketType, BN, BASE_PRECISION, PRICE_PRECISION, QUOTE_PRECISION,
+// getMarketOrderParams, PerpPosition, calculateEntryPrice
+// If upgrading SDK, verify these exports still exist.
 // =================================================================
 
 import {

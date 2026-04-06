@@ -1,5 +1,5 @@
 # .github/workflows/ci-dashboard.yml
-name: "🖥️ Dashboard CI"
+name: "Dashboard CI"
 
 on:
   workflow_call:
@@ -39,24 +39,24 @@ jobs:
           VAULT_ADDRESS: "11111111111111111111111111111111"
         run: |
           npm run build
-          echo "✅ Dashboard builds successfully"
+          echo "[PASS] Dashboard builds successfully"
 
       - name: Check all pages exist
         run: |
-          echo "═══ Checking dashboard pages ═══"
+          echo "=== Checking dashboard pages ==="
 
           # Check for main pages in either app/ or src/app/
           for page in page.tsx layout.tsx globals.css; do
             found=false
             for base in "" "src/"; do
               if [ -f "${base}app/$page" ]; then
-                echo "✅ ${base}app/$page"
+                echo "[PASS] ${base}app/$page"
                 found=true
                 break
               fi
             done
             if ! $found; then
-              echo "⚠️ $page not found"
+              echo "[WARN] $page not found"
             fi
           done
 
@@ -66,13 +66,13 @@ jobs:
             found=false
             for base in "" "src/"; do
               if [ -f "${base}app/${dpage}/page.tsx" ] || [ -f "${base}app/dashboard/${dpage}/page.tsx" ]; then
-                echo "✅ dashboard/$dpage"
+                echo "[PASS] dashboard/$dpage"
                 found=true
                 break
               fi
             done
             if ! $found; then
-              echo "⚠️ dashboard/$dpage not found (optional)"
+              echo "[WARN] dashboard/$dpage not found (optional)"
             fi
           done
 
@@ -80,8 +80,8 @@ jobs:
         run: |
           if [ -d ".next" ]; then
             SIZE=$(du -sh .next | cut -f1)
-            echo "✅ Build output size: $SIZE"
+            echo "[PASS] Build output size: $SIZE"
           else
-            echo "❌ .next directory not found after build"
+            echo "[FAIL] .next directory not found after build"
             exit 1
           fi

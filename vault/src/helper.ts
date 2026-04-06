@@ -68,7 +68,7 @@ export async function sendAndConfirmOptimisedTx(
         maxRetries: 2,
       });
 
-      console.log(`✅ TX confirmed (attempt ${attempt}): ${sig}`);
+      console.log(`[OK] TX confirmed (attempt ${attempt}): ${sig}`);
       return sig;
     } catch (err: any) {
       lastError = err;
@@ -76,14 +76,14 @@ export async function sendAndConfirmOptimisedTx(
       if (err instanceof SendTransactionError) {
         const logs = err.logs;
         console.error(
-          `❌ TX attempt ${attempt}/${opts.maxRetries} failed:`,
+          `[FAIL] TX attempt ${attempt}/${opts.maxRetries} failed:`,
           err.message,
         );
         if (logs) {
           console.error("   Logs:", logs.slice(-5).join("\n   "));
         }
       } else {
-        console.error(`❌ TX attempt ${attempt}/${opts.maxRetries}:`, err.message);
+        console.error(`[FAIL] TX attempt ${attempt}/${opts.maxRetries}:`, err.message);
       }
 
       if (attempt < opts.maxRetries!) {
@@ -142,11 +142,11 @@ export async function sendVersionedTx(
         "confirmed",
       );
 
-      console.log(`✅ Versioned TX confirmed (attempt ${attempt}): ${sig}`);
+      console.log(`[OK] Versioned TX confirmed (attempt ${attempt}): ${sig}`);
       return sig;
     } catch (err: any) {
       lastError = err;
-      console.error(`❌ Versioned TX attempt ${attempt}: ${err.message}`);
+      console.error(`[FAIL] Versioned TX attempt ${attempt}: ${err.message}`);
 
       if (attempt < opts.maxRetries!) {
         const delay = Math.min(1000 * Math.pow(2, attempt), 8000);
@@ -177,7 +177,7 @@ export async function requestAirdrop(
       amount * 1e9, // lamports
     );
     await connection.confirmTransaction(sig, "confirmed");
-    console.log(`💰 Airdropped ${amount} SOL to ${publicKey.toString()}`);
+    console.log(`[AIRDROP] ${amount} SOL to ${publicKey.toString()}`);
   } catch (err) {
     console.warn("Airdrop failed (may not be on devnet):", err);
   }
@@ -186,18 +186,18 @@ export async function requestAirdrop(
 // ═══ LOGGING ═══
 export function logStep(step: string, details?: any): void {
   const timestamp = new Date().toISOString();
-  console.log(`\n[${timestamp}] 🔹 ${step}`);
+  console.log(`\n[${timestamp}] [STEP] ${step}`);
   if (details) {
     console.log("   ", JSON.stringify(details, null, 2));
   }
 }
 
 export function logSuccess(message: string): void {
-  console.log(`\n✅ ${message}`);
+  console.log(`\n[OK] ${message}`);
 }
 
 export function logError(message: string, error?: any): void {
-  console.error(`\n❌ ${message}`);
+  console.error(`\n[ERROR] ${message}`);
   if (error) {
     console.error("   Error:", error.message || error);
   }

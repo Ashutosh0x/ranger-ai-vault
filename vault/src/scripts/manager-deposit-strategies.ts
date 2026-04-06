@@ -6,6 +6,8 @@
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
   loadKeypair,
   sendAndConfirmOptimisedTx,
@@ -23,6 +25,7 @@ import {
   KAMINO_ALLOCATION,
   ZETA_LEND_ALLOCATION,
   ZETA_PERPS_ALLOCATION,
+  ASSET_MINT_ADDRESS,
 } from "../variables";
 
 interface Allocation {
@@ -43,6 +46,7 @@ async function main() {
   const client = new VoltrClient(connection);
   const managerKp = loadKeypair(MANAGER_KEYPAIR_PATH);
   const vault = new PublicKey(VAULT_ADDRESS);
+  const vaultAssetMint = new PublicKey(ASSET_MINT_ADDRESS);
 
   const allocations: Allocation[] = [
     {
@@ -65,14 +69,17 @@ async function main() {
   for (const alloc of allocations) {
     logStep(`Depositing ${alloc.amount / 1e6} USDC to ${alloc.name}`);
 
-    const depositIx = await client.createManagerDepositStrategyIx(
+    const depositIx = await client.createDepositStrategyIx(
       {
-        amount: BigInt(alloc.amount),
+        depositAmount: new BN(alloc.amount),
       },
       {
         vault,
         strategy: new PublicKey(alloc.strategyAddress),
         manager: managerKp.publicKey,
+        vaultAssetMint,
+        assetTokenProgram: TOKEN_PROGRAM_ID,
+        remainingAccounts: [],
       },
     );
 

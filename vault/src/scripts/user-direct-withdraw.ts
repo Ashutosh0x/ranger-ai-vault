@@ -5,6 +5,8 @@
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
   loadKeypair,
   sendAndConfirmOptimisedTx,
@@ -19,6 +21,7 @@ import {
   KAMINO_STRATEGY_ADDRESS,
   ZETA_LEND_STRATEGY_ADDRESS,
   ZETA_PERPS_STRATEGY_ADDRESS,
+  ASSET_MINT_ADDRESS,
 } from "../variables";
 
 async function main() {
@@ -57,15 +60,21 @@ async function main() {
   const client = new VoltrClient(connection);
   const userKp = loadKeypair(USER_KEYPAIR_PATH);
   const vault = new PublicKey(VAULT_ADDRESS);
+  const vaultAssetMint = new PublicKey(ASSET_MINT_ADDRESS);
 
-  const directWithdrawIx = await client.createUserDirectWithdrawIx(
+  const directWithdrawIx = await client.createDirectWithdrawStrategyIx(
     {
-      shares: BigInt(sharesAmount),
+      amount: new BN(sharesAmount),
+      isAmountInLp: true,
+      isWithdrawAll: false,
     },
     {
+      user: userKp.publicKey,
       vault,
       strategy: new PublicKey(strategyAddress),
-      user: userKp.publicKey,
+      vaultAssetMint,
+      assetTokenProgram: TOKEN_PROGRAM_ID,
+      remainingAccounts: [],
     },
   );
 

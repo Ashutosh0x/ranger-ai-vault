@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { QueryProvider } from "./providers";
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import { WalletContextProvider } from "@/providers/WalletProvider";
 
 export const metadata: Metadata = {
   title: "Ranger AI Vault",
@@ -22,7 +25,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-vault-bg text-white antialiased">
-        {children}
+        <ThemeProvider>
+          <WalletContextProvider>
+            <QueryProvider>
+              {children}
+            </QueryProvider>
+          </WalletContextProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

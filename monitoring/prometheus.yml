@@ -5,21 +5,28 @@ global:
 scrape_configs:
   - job_name: 'signal-engine'
     static_configs:
-      - targets: ['signal-engine:8000']
-    metrics_path: '/metrics'
-    scrape_interval: 10s
-
-  - job_name: 'keeper'
-    static_configs:
-      - targets: ['keeper:3001']
-    metrics_path: '/metrics'
+      - targets: ['signal-engine:8080']
+    metrics_path: '/health'
     scrape_interval: 30s
+    # Note: Signal engine currently returns plain text from /health.
+    # To enable proper Prometheus metrics, add a /metrics endpoint to main.rs.
 
-  - job_name: 'nginx'
-    static_configs:
-      - targets: ['nginx:80']
-    metrics_path: '/nginx_status'
+  # Note: Keeper is a cron-based bot and does not expose an HTTP server.
+  # To enable metrics, add an HTTP server on a configurable port.
+  # - job_name: 'keeper'
+  #   static_configs:
+  #     - targets: ['keeper:3001']
+  #   metrics_path: '/metrics'
 
-  - job_name: 'redis'
-    static_configs:
-      - targets: ['redis:6379']
+  # Note: Requires nginx stub_status module to be configured.
+  # Add: location /nginx_status { stub_status; allow 172.0.0.0/8; deny all; }
+  # - job_name: 'nginx'
+  #   static_configs:
+  #     - targets: ['nginx:80']
+  #   metrics_path: '/nginx_status'
+
+  # Note: Redis doesn't natively expose Prometheus metrics.
+  # Use redis_exporter: https://github.com/oliver006/redis_exporter
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']

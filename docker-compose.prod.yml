@@ -14,12 +14,12 @@ services:
   # ── Signal Engine ──────────────────────────────────────
   signal-engine:
     build:
-      context: ./signal-engine
+      context: ./signal-engine-rs
       dockerfile: Dockerfile.prod
     container_name: ranger-signal
     <<: *always-restart
     ports:
-      - "8000:8000"
+      - "8080:8080"
     env_file:
       - .env
     volumes:
@@ -29,7 +29,7 @@ services:
       - ranger-net
     logging: *default-logging
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -48,7 +48,7 @@ services:
     env_file:
       - .env
     environment:
-      - SIGNAL_SERVER_URL=http://signal-engine:8000
+      - SIGNAL_SERVER_URL=http://signal-engine:8080
     volumes:
       - keeper-logs:/app/logs
       - ./keys:/app/keys:ro
@@ -68,7 +68,7 @@ services:
     env_file:
       - .env
     environment:
-      - NEXT_PUBLIC_SIGNAL_URL=http://signal-engine:8000
+      - NEXT_PUBLIC_SIGNAL_URL=http://signal-engine:8080
     networks:
       - ranger-net
     logging: *default-logging
@@ -104,7 +104,7 @@ services:
 
   # ── Prometheus ─────────────────────────────────────────
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.51.0
     container_name: ranger-prometheus
     <<: *always-restart
     ports:
@@ -117,7 +117,7 @@ services:
 
   # ── Grafana ────────────────────────────────────────────
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.4.0
     container_name: ranger-grafana
     <<: *always-restart
     ports:

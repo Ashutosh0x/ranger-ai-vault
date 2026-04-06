@@ -11,15 +11,18 @@
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.0",
+    "@drift-labs/sdk": "^2.89.0",
     "@langchain/core": "^1.1.39",
     "@solana/spl-token": "^0.4.0",
     "@solana/web3.js": "^1.95.0",
-    "@voltr/vault-sdk": "latest",
+    "@voltr/vault-sdk": "^0.2.0",
+    "@zetamarkets/sdk": "1.64.0",
     "axios": "^1.7.0",
     "bs58": "^5.0.0",
     "cron": "^3.1.0",
     "dotenv": "^16.4.0",
     "solana-agent-kit": "^2.0.10",
+    "tweetnacl": "^1.0.3",
     "winston": "^3.13.0"
   },
   "devDependencies": {

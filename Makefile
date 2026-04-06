@@ -3,7 +3,7 @@
 # ═══════════════════════════════════════════════
 
 .PHONY: setup keygen deploy-devnet deploy-mainnet signal keeper dashboard start \
-        train backtest test-signal test-keeper test-vault test-dashboard test-all \
+        test-signal test-keeper test-vault test-dashboard test-all \
         ci-local validate docker-build docker-up docker-down docker-logs clean \
         lint format vault-state vault-positions vault-performance help
 
@@ -13,7 +13,7 @@ setup: ## Install all dependencies
 	@echo "═══ Installing Vault dependencies ═══"
 	cd vault && npm install
 	@echo ""
-	@echo "═══ Installing Signal Engine dependencies ═══"
+	@echo "═══ Building Signal Engine (Rust) ═══"
 	cd signal-engine-rs && cargo build
 	@echo ""
 	@echo "═══ Installing Keeper dependencies ═══"
@@ -102,14 +102,6 @@ start: ## Start all services (signal + keeper + dashboard)
 	@echo "Starting dashboard..."
 	cd dashboard && npm run dev
 
-# ═══ ML ═══
-
-train: ## Train XGBoost models (Offline in Rust)
-	@echo "═══ ML Training is now an offline binding in Rust ═══"
-
-backtest: ## Run walk-forward backtest (Offline in Rust)
-	@echo "═══ Backtesting is offline in Rust ═══"
-
 # ═══ TESTING ═══
 
 test-signal: ## Run signal engine tests
@@ -137,19 +129,16 @@ test-all: test-signal test-keeper test-vault test-dashboard ## Run all tests
 ci-local: ## Run full CI pipeline locally (same as GitHub Actions)
 	@echo "═══ Running CI Pipeline Locally ═══"
 	@echo ""
-	@echo "Stage 1: Structure Validation"
-	@bash scripts/ci/validate-structure.sh
-	@echo ""
-	@echo "Stage 2: Signal Engine"
+	@echo "Stage 1: Signal Engine"
 	@$(MAKE) test-signal
 	@echo ""
-	@echo "Stage 3: Keeper"
+	@echo "Stage 2: Keeper"
 	@$(MAKE) test-keeper
 	@echo ""
-	@echo "Stage 4: Vault"
+	@echo "Stage 3: Vault"
 	@$(MAKE) test-vault
 	@echo ""
-	@echo "Stage 5: Dashboard"
+	@echo "Stage 4: Dashboard"
 	@$(MAKE) test-dashboard
 	@echo ""
 	@echo "═══ ✅ Local CI Complete — All Checks Passed ═══"
@@ -162,19 +151,19 @@ validate: ## Quick import validation (no full build)
 
 # ═══ DOCKER ═══
 
-docker-build: ## Build all Docker images
+docker-build: ## Build all Docker images (dev)
 	cd infra/docker && docker compose build
 
-docker-up: ## Start with docker-compose
+docker-up: ## Start with docker-compose (dev)
 	cd infra/docker && docker compose up -d
 	@echo "✅ Services started"
 	@echo "  Signal: http://localhost:8080/health"
 	@echo "  Dashboard: http://localhost:3000"
 
-docker-down: ## Stop all containers
+docker-down: ## Stop all containers (dev)
 	cd infra/docker && docker compose down
 
-docker-logs: ## View all container logs
+docker-logs: ## View all container logs (dev)
 	cd infra/docker && docker compose logs -f
 
 # ═══ VAULT QUERIES ═══
@@ -191,7 +180,7 @@ vault-performance: ## Query vault performance
 # ═══ PRODUCTION DOCKER ═══
 
 docker-prod-build: ## Build production Docker images
-	docker build -t ranger-signal:prod signal-engine/ -f signal-engine/Dockerfile.prod
+	docker build -t ranger-signal:prod signal-engine-rs/ -f signal-engine-rs/Dockerfile.prod
 	docker build -t ranger-keeper:prod keeper/ -f keeper/Dockerfile.prod
 	docker build -t ranger-dashboard:prod dashboard/ -f dashboard/Dockerfile.prod
 	@echo "✅ All production images built"
@@ -199,7 +188,7 @@ docker-prod-build: ## Build production Docker images
 docker-prod-up: ## Start production stack
 	docker compose -f docker-compose.prod.yml up -d
 	@echo "✅ Production stack started"
-	@echo "  Signal:    http://localhost:8000"
+	@echo "  Signal:    http://localhost:8080"
 	@echo "  Dashboard: http://localhost:3000"
 	@echo "  Grafana:   http://localhost:3001"
 	@echo "  Prometheus: http://localhost:9090"
@@ -225,7 +214,7 @@ deploy-script: ## Run full devnet deployment script
 	bash scripts/deploy-devnet.sh
 
 keeper-dry: ## Dry run keeper (no transactions)
-	DRY_RUN=true cd keeper && npx ts-node src/index.ts
+	cd keeper && DRY_RUN=true npx ts-node src/index.ts
 
 health: ## Check health of all services
 	@bash scripts/health-check.sh
@@ -243,12 +232,12 @@ clean: ## Remove build artifacts
 	@echo "✅ Cleaned"
 
 lint: ## Lint all packages
-	cd signal-engine && python -m ruff check src/ training/ tests/ || true
+	cd signal-engine-rs && cargo clippy || true
 	cd keeper && npx tsc --noEmit || true
 	cd vault && npx tsc --noEmit || true
 
 format: ## Format all code
-	cd signal-engine && python -m ruff format src/ training/ tests/ || true
+	cd signal-engine-rs && cargo fmt || true
 
 # ═══ HELP ═══
 

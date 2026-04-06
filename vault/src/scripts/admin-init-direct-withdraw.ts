@@ -43,11 +43,19 @@ async function main() {
   for (const strategy of strategyAddresses) {
     logStep(`Enabling direct withdraw: ${strategy.name}`);
 
-    const initDirectWithdrawIx = await client.createInitDirectWithdrawIx({
-      vault,
-      strategy: new PublicKey(strategy.address),
-      admin: adminKp.publicKey,
-    });
+    const initDirectWithdrawIx = await client.createInitializeDirectWithdrawStrategyIx(
+      {
+        instructionDiscriminator: null,
+        additionalArgs: null,
+        allowUserArgs: false,
+      },
+      {
+        payer: adminKp.publicKey,
+        admin: adminKp.publicKey,
+        vault,
+        strategy: new PublicKey(strategy.address),
+      },
+    );
 
     const sig = await sendAndConfirmOptimisedTx(
       connection,

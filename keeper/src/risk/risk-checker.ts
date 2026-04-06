@@ -36,16 +36,16 @@ export class RiskChecker {
       return false;
     }
 
-    // Check daily drawdown
+    // Check daily drawdown (as percentage — dailyPnl is in USD, compare as fraction)
     const state = this.stateManager.getState();
-    if (state.dailyPnl < -(RISK_PARAMS.maxDailyDrawdown * 1000000)) {
-      logger.warn("Risk: Daily drawdown limit reached");
+    if (state.dailyPnl < -RISK_PARAMS.maxDailyDrawdown) {
+      logger.warn(`Risk: Daily drawdown limit reached (${(state.dailyPnl * 100).toFixed(2)}%)`);
       return false;
     }
 
     // Check monthly drawdown
-    if (state.monthlyPnl < -(RISK_PARAMS.maxMonthlyDrawdown * 1000000)) {
-      logger.warn("Risk: Monthly drawdown limit reached");
+    if (state.monthlyPnl < -RISK_PARAMS.maxMonthlyDrawdown) {
+      logger.warn(`Risk: Monthly drawdown limit reached (${(state.monthlyPnl * 100).toFixed(2)}%)`);
       return false;
     }
 
@@ -72,9 +72,15 @@ export class RiskChecker {
    */
   shouldHaltTrading(): boolean {
     const state = this.stateManager.getState();
+
+    // Check DRY_RUN mode
+    if (process.env.DRY_RUN === "true") {
+      return true;
+    }
+
     return (
-      state.dailyPnl < -(RISK_PARAMS.maxDailyDrawdown * 1000000) ||
-      state.monthlyPnl < -(RISK_PARAMS.maxMonthlyDrawdown * 1000000)
+      state.dailyPnl < -RISK_PARAMS.maxDailyDrawdown ||
+      state.monthlyPnl < -RISK_PARAMS.maxMonthlyDrawdown
     );
   }
 

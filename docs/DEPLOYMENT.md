@@ -126,30 +126,80 @@ docker compose -f docker-compose.prod.yml logs -f keeper
 
 ## GitHub Actions CI/CD
 
-Every push to `main` triggers the CI pipeline:
+The project uses **15 GitHub Actions workflows** organized into CI, CD, and Security layers.
 
-```yaml
-# .github/workflows/ci-main.yml triggers:
-# 1. Structure validation
-# 2. Signal engine tests (45 tests)
-# 3. Keeper bot tests (36 tests)
-# 4. Dashboard build verification
-# 5. Integration tests
-# 6. Backtest artifact generation
+### CI Pipeline (ci-main.yml)
+
+Every push to `main` or PR triggers the full CI orchestrator:
+
 ```
+Stage 0: SECURITY --------> 12-layer security audit (security-audit.yml)
+Stage 1: VALIDATE --------> File structure + env template check
+Stage 2: BUILD (parallel) -> Signal Engine | Keeper | Vault | Dashboard
+Stage 3: INTEGRATION -----> Cross-package communication tests
+Stage 4: BACKTEST --------> 6-month synthetic backtest + artifacts
+Stage 5: SUMMARY ---------> Pass/fail report
+```
+
+### Security Audit Pipeline (security-audit.yml)
+
+Production-grade, 12-layer security scanning:
+
+| Layer | Check | Tool |
+|-------|-------|------|
+| L1 | Secret Detection | Gitleaks + Solana-specific patterns |
+| L2a | NPM Supply Chain | `npm audit` (keeper, vault, dashboard) |
+| L2b | Rust Supply Chain | `cargo-audit` + `cargo-deny` |
+| L3 | SAST | CodeQL (TypeScript) |
+| L4 | Solana Hardening | Custom DeFi-logic checks |
+| L5 | Rust Security Lint | Clippy + unsafe audit |
+| L6 | Docker Security | Hadolint + privilege checks |
+| L7 | License Compliance | Copyleft detection |
+| L8 | OSSF Scorecard | Supply chain posture |
+| L9 | IaC Security | Nginx + Docker Compose audit |
+| L10 | Lockfile Integrity | Drift detection |
+| L11 | Trivy SCA | Filesystem scan + SBOM |
+| L12 | PR Comment Bot | Auto-posts security summary |
+
+### All Workflows
+
+| Workflow | Type | Purpose |
+|----------|------|---------|
+| `ci-main.yml` | CI | Full pipeline orchestrator |
+| `ci-signal-engine.yml` | CI | Rust cargo check, clippy, tests |
+| `ci-keeper.yml` | CI | TypeScript compile, Jest, dry run |
+| `ci-vault.yml` | CI | Compile, compute budget validation |
+| `ci-dashboard.yml` | CI | Next.js build, page validation |
+| `ci-integration.yml` | CI | Cross-package integration tests |
+| `ci-backtest.yml` | CI | Synthetic backtest + artifacts |
+| `security-audit.yml` | Security | 12-layer security pipeline |
+| `security-scan.yml` | Security | Wrapper -> security-audit.yml |
+| `scorecard.yml` | Security | Wrapper -> security-audit.yml (L8) |
+| `validate-structure.yml` | CI | Repo structure validation |
+| `cd-docker.yml` | CD | Build + push images to GHCR |
+| `cd-dashboard.yml` | CD | Deploy dashboard to Vercel |
+| `cd-devnet.yml` | CD | Deploy to Solana devnet |
+| `cd-mainnet.yml` | CD | Manual mainnet deployment |
 
 ### Required Secrets
 
 Set these in **GitHub repo > Settings > Secrets > Actions**:
 
-| Secret | Description |
-|--------|-------------|
-| `HELIUS_RPC_URL` | Helius RPC endpoint |
-| `COINGLASS_API_KEY` | Coinglass API key |
-| `KEEPER_SECRET` | Signal server authentication secret |
-| `VERCEL_TOKEN` | Vercel deployment token (optional, for CI deploy) |
-| `VERCEL_ORG_ID` | Vercel organization ID (optional) |
-| `VERCEL_PROJECT_ID` | Vercel project ID (optional) |
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `HELIUS_RPC_URL` | Yes | Helius RPC endpoint |
+| `HELIUS_API_KEY` | For CD | Helius API key (devnet/mainnet deploy) |
+| `COINGLASS_API_KEY` | Yes | Coinglass API key |
+| `KEEPER_SECRET` | Yes | Signal server authentication secret |
+| `DEVNET_ADMIN_KEYPAIR` | For CD | Base58-encoded admin keypair (devnet) |
+| `DEVNET_MANAGER_KEYPAIR` | For CD | Base58-encoded manager keypair (devnet) |
+| `MAINNET_ADMIN_KEYPAIR` | For CD | Base58-encoded admin keypair (mainnet) |
+| `MAINNET_MANAGER_KEYPAIR` | For CD | Base58-encoded manager keypair (mainnet) |
+| `VERCEL_TOKEN` | Optional | Vercel deployment token |
+| `VERCEL_ORG_ID` | Optional | Vercel organization ID |
+| `VERCEL_PROJECT_ID` | Optional | Vercel project ID |
+| `TELEGRAM_BOT_TOKEN` | Optional | Telegram alert bot token |
+| `TELEGRAM_CHAT_ID` | Optional | Telegram chat ID for alerts |
 
 ---
 

@@ -5,6 +5,8 @@
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
+import { TOKEN_PROGRAM_ID, getMint } from "@solana/spl-token";
 import {
   loadKeypair,
   sendAndConfirmOptimisedTx,
@@ -17,6 +19,7 @@ import {
   USER_KEYPAIR_PATH,
   VAULT_ADDRESS,
   DEPOSIT_AMOUNT,
+  ASSET_MINT_ADDRESS,
 } from "../variables";
 
 async function main() {
@@ -38,11 +41,17 @@ async function main() {
   const client = new VoltrClient(connection);
   const userKp = loadKeypair(USER_KEYPAIR_PATH);
   const vault = new PublicKey(VAULT_ADDRESS);
+  const vaultAssetMint = new PublicKey(ASSET_MINT_ADDRESS);
 
   // Fetch vault state to show current NAV
   const vaultState = await client.fetchVaultAccount(vault);
-  const currentShares = Number(vaultState.totalShares);
-  const currentAssets = Number(vaultState.totalAssets);
+  const currentAssets = Number((vaultState as Record<string, any>).asset?.totalValue ?? 0);
+
+  // Get LP supply from the LP mint
+  const lpMint = client.findVaultLpMint(vault);
+  const lpMintInfo = await getMint(connection, lpMint);
+  const currentShares = Number(lpMintInfo.supply);
+
   const navPerShare = currentShares > 0 ? currentAssets / currentShares : 1;
 
   logStep("Vault state before deposit", {
@@ -51,13 +60,13 @@ async function main() {
     navPerShare: navPerShare.toFixed(6),
   });
 
-  const depositIx = await client.createUserDepositIx(
+  const depositIx = await client.createDepositVaultIx(
+    new BN(amountRaw),
     {
-      amount: BigInt(amountRaw),
-    },
-    {
+      userAuthority: userKp.publicKey,
       vault,
-      user: userKp.publicKey,
+      vaultAssetMint,
+      assetTokenProgram: TOKEN_PROGRAM_ID,
     },
   );
 

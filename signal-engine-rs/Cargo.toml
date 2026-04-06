@@ -10,7 +10,7 @@ tokio = { version = "1.0", features = ["full"] }
 axum = "0.6"
 
 # Dataframes (Pandas replacement)
-polars = { version = "0.33", features = ["lazy", "json", "csv"] }
+polars = { version = "0.33", features = ["lazy", "json", "csv", "rolling_window"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

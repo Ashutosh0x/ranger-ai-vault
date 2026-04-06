@@ -2,10 +2,11 @@
 // Admin Script: Update Vault Config
 // ═══════════════════════════════════════════════════════
 // Update vault configuration post-deployment:
-// MaxCap, WithdrawalWaitingPeriod, fees
+// MaxCap, StartAtTs, fees
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
+import { BN } from "@coral-xyz/anchor";
 import {
   loadKeypair,
   sendAndConfirmOptimisedTx,
@@ -29,14 +30,15 @@ async function main() {
   const vault = new PublicKey(VAULT_ADDRESS);
 
   // Customize these values as needed
-  const updateIx = await client.createUpdateVaultConfigIx(
+  const updateIx = await client.createUpdateVaultIx(
     {
-      newConfig: {
-        maxCap: BigInt("10000000000000"),        // 10M USDC
-        withdrawalWaitingPeriod: BigInt(0),
-        performanceFeeBps: 1000,                  // 10%
-        managementFeeBps: 200,                    // 2%
-      },
+      maxCap: new BN("10000000000000"),              // 10M USDC
+      startAtTs: new BN(Math.floor(Date.now() / 1000)),
+      lockedProfitDegradationDuration: new BN(21600), // 6 hours
+      managerPerformanceFee: 1000,                    // 10%
+      adminPerformanceFee: 1000,                      // 10%
+      managerManagementFee: 200,                      // 2%
+      adminManagementFee: 200,                        // 2%
     },
     {
       vault,

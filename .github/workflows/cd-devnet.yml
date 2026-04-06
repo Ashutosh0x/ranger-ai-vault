@@ -1,4 +1,4 @@
-name: 🚀 CD — Deploy to Devnet
+name: CD - Deploy to Devnet
 
 on:
   push:
@@ -33,14 +33,14 @@ jobs:
       - name: Validate secrets
         run: |
           if [ -z "${{ secrets.HELIUS_API_KEY }}" ]; then
-            echo "❌ HELIUS_API_KEY not set"
+            echo "[FAIL] HELIUS_API_KEY not set"
             exit 1
           fi
           if [ -z "${{ secrets.DEVNET_ADMIN_KEYPAIR }}" ]; then
-            echo "❌ DEVNET_ADMIN_KEYPAIR not set"
+            echo "[FAIL] DEVNET_ADMIN_KEYPAIR not set"
             exit 1
           fi
-          echo "✅ All required secrets present"
+          echo "[PASS] All required secrets present"
 
       - name: Configure Solana CLI
         run: |
