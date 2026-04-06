@@ -120,7 +120,7 @@ echo "════════════════════════�
 echo ""
 echo "Next steps:"
 echo "  1. Copy vault address from output above → .env VAULT_ADDRESS"
-echo "  2. Copy strategy addresses → .env KAMINO/DRIFT_STRATEGY_ADDRESS"
+echo "  2. Copy strategy addresses → .env KAMINO/ZETA_STRATEGY_ADDRESS"
 echo "  3. Update submission/wallet-addresses.md"
 echo "  4. Update README.md vault address"
 echo "  5. Start signal engine: make signal"

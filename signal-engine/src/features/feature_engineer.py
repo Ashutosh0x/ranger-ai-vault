@@ -1,13 +1,13 @@
 """
 Feature Engineer — Computes all ML features from raw data sources.
-Combines Drift, Coinglass, and Pyth data into a feature vector.
+Combines Zeta, Coinglass, and Pyth data into a feature vector.
 """
 
 import pandas as pd
 import numpy as np
 from typing import Dict, Optional
 
-from src.data.drift_fetcher import get_drift_fetcher
+from src.data.zeta_fetcher import get_zeta_fetcher
 from src.data.pyth_fetcher import get_pyth_fetcher
 from src.features.indicators import (
     bollinger_bands,
@@ -23,7 +23,7 @@ class FeatureEngineer:
     """Compute all features for a given asset."""
 
     def __init__(self):
-        self.drift = get_drift_fetcher()
+        self.zeta = get_zeta_fetcher()
         self.pyth = get_pyth_fetcher()
 
     def compute_features(self, asset: str) -> Dict[str, float]:
@@ -36,20 +36,20 @@ class FeatureEngineer:
         # 1. Get current price
         current_price = self.pyth.get_price(asset)
         if current_price is None:
-            current_price = self.drift.get_oracle_price(asset) or 0.0
+            current_price = self.zeta.get_oracle_price(asset) or 0.0
 
         # 2. Funding rate features
-        funding = self.drift.compute_funding_features(asset)
+        funding = self.zeta.compute_funding_features(asset)
         features["funding_rate_1h"] = funding.get("funding_rate_1h", 0.0)
         features["funding_rate_8h_ma"] = funding.get("funding_rate_8h_ma", 0.0)
 
         # 3. Volume and OI features
-        volume = self.drift.compute_volume_features(asset)
+        volume = self.zeta.compute_volume_features(asset)
         features["oi_change_1h"] = volume.get("oi_change_1h", 0.0)
         features["volume_ratio"] = volume.get("volume_ratio", 0.0)
 
         # 4. Price data features (from OHLCV)
-        ohlcv = self.drift.get_ohlcv(asset, resolution="60", limit=200)
+        ohlcv = self.zeta.get_ohlcv(asset, resolution="60", limit=200)
 
         if not ohlcv.empty and "close" in ohlcv.columns:
             close_prices = ohlcv["close"]
@@ -79,7 +79,7 @@ class FeatureEngineer:
             features["vwap_deviation"] = 0.0
 
         # 5. Basis spread (mark - oracle)
-        features["basis_spread"] = self.drift.compute_basis_spread(asset)
+        features["basis_spread"] = self.zeta.compute_basis_spread(asset)
 
         # 6. Liquidation features (KEY DIFFERENTIATOR)
         if current_price > 0:

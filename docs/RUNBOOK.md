@@ -41,12 +41,12 @@ docker compose ps
 
 ```
 [INFO]  Receipt refreshed: kamino-lending (NAV: $50,234.12)
-[INFO]  Receipt refreshed: drift-perps (NAV: $49,876.43)
+[INFO]  Receipt refreshed: zeta-perps (NAV: $49,876.43)
 [INFO]  Signal fetched: SOL-PERP signal=0.42 confidence=0.65
 [INFO]  Signal fetched: BTC-PERP signal=-0.18 confidence=0.52
 [INFO]  Risk check: ALL PASS (dd=0.8%, health=62, delta=0.03)
 [INFO]  No strong signal -- skipping trade
-[INFO]  Rebalance: Kamino 52% / Drift 48% (delta < $10, no change)
+[INFO]  Rebalance: Kamino 52% / Zeta 48% (delta < $10, no change)
 [INFO]  Tick complete: 0 trades, 1 position open
 ```
 
@@ -58,7 +58,7 @@ docker compose ps
 
 | Metric | Normal Range | Warning | Critical |
 |--------|-------------|---------|----------|
-| Drift Health | 40-100 | < 30 | < 15 |
+| Zeta Health | 40-100 | < 30 | < 15 |
 | Daily Drawdown | 0-1.5% | > 2% | > 3% |
 | Monthly Drawdown | 0-5% | > 6% | > 8% |
 | Net Delta | -0.05 to +0.05 | > 0.08 | > 0.10 |
@@ -154,7 +154,7 @@ curl -X POST $HELIUS_RPC_URL \
 
 ---
 
-### IR-4: Drift Health Dropping
+### IR-4: Zeta Health Dropping
 
 **Symptoms:** Health monitor warnings, leverage increasing.
 
@@ -171,7 +171,7 @@ cd vault && npx ts-node src/scripts/query-strategy-positions.ts
 1. If health < 20: keeper auto-reduces position sizes
 2. If health < 15: keeper auto-triggers emergency unwind
 3. Manual intervention: reduce `kellyFraction` in `keeper/src/config.ts`
-4. Add more collateral to Drift subaccount if needed
+4. Add more collateral to Zeta subaccount if needed
 
 ---
 

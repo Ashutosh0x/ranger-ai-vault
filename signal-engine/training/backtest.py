@@ -12,7 +12,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.config import ASSETS, FEATURE_COLUMNS, SIGNAL_THRESHOLDS, RISK_PARAMS
-from src.data.drift_fetcher import get_drift_fetcher
+from src.data.zeta_fetcher import get_zeta_fetcher
 from src.features.indicators import bollinger_bands, price_momentum
 
 
@@ -23,12 +23,12 @@ def run_backtest():
     print("═" * 60)
 
     # Fetch data
-    drift = get_drift_fetcher()
+    zeta = get_zeta_fetcher()
     all_results = []
 
     for asset in ASSETS:
         print(f"\n[BT] Running backtest for {asset}...")
-        ohlcv = drift.get_ohlcv(asset, resolution="3600", limit=4320)
+        ohlcv = zeta.get_ohlcv(asset, resolution="3600", limit=4320)
 
         if ohlcv.empty or len(ohlcv) < 100:
             print(f"[BT] Insufficient data for {asset}, using synthetic data")

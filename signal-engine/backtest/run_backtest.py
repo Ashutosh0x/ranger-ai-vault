@@ -14,7 +14,7 @@ from datetime import datetime
 # Add parent to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.data.drift_fetcher import get_drift_fetcher
+from src.data.zeta_fetcher import get_zeta_fetcher
 from src.features.feature_engineer import get_feature_engineer
 from src.features.indicators import bollinger_bands, price_momentum, rsi, vwap
 from src.models.momentum_model import MomentumModel
@@ -56,12 +56,12 @@ def run_backtest(
         return _run_synthetic_backtest(output_dir)
 
     # Fetch data for all assets
-    drift = get_drift_fetcher()
+    zeta = get_zeta_fetcher()
     all_results = []
 
     for asset in ASSETS:
         print(f"\n[BACKTEST] Running {asset}...")
-        ohlcv = drift.get_ohlcv(asset, resolution="3600", limit=4320)
+        ohlcv = zeta.get_ohlcv(asset, resolution="3600", limit=4320)
 
         if ohlcv.empty:
             print(f"[WARN] No OHLCV data for {asset}, using synthetic")
@@ -194,7 +194,7 @@ def _backtest_asset(
 
     for idx, i in enumerate(valid_indices):
         signal = float(signals[idx])
-        current_price = close.iloc[i]
+        current_price = close_arr[i]
 
         if position is None:
             if signal > SIGNAL_THRESHOLDS["long_entry"]:

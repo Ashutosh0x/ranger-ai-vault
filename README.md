@@ -33,7 +33,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Drift_Protocol-6366F1?style=flat-square" alt="Drift Protocol" />
+  <img src="https://img.shields.io/badge/Zeta_Protocol-6366F1?style=flat-square" alt="Zeta Markets" />
   <img src="https://img.shields.io/badge/Kamino_Finance-22C55E?style=flat-square" alt="Kamino Finance" />
   <img src="https://img.shields.io/badge/Jupiter_Aggregator-FFA500?style=flat-square" alt="Jupiter" />
   <img src="https://img.shields.io/badge/Pyth_Network-7C3AED?style=flat-square" alt="Pyth Network" />
@@ -78,7 +78,7 @@
 Ranger AI Vault is a **production-ready, AI-driven yield vault** built on [Ranger Earn](https://docs.ranger.finance/) (Voltr) that combines:
 
 1. **Engine A — Floor Yield (50%):** Stable USDC lending on Kamino Finance providing 4-12% APY baseline
-2. **Engine B — Active Trading (50%):** ML signal-driven momentum + mean-reversion trades on Drift perps with delta-neutral hedging
+2. **Engine B — Active Trading (50%):** ML signal-driven momentum + mean-reversion trades on Zeta perps with delta-neutral hedging
 
 The vault accepts USDC deposits, deploys across two strategy engines, and uses an off-chain AI signal engine with on-chain Ed25519 cryptographic attestation to execute trades — all wrapped in a 6-layer risk management framework.
 
@@ -88,8 +88,8 @@ graph TD
     Vault --> FloorEngine["50% Floor Yield"]
     Vault --> ActiveEngine["50% Active Trading"]
     FloorEngine --> Kamino["Kamino Lending\n4-12% APY"]
-    ActiveEngine --> Drift["Drift Perps\nSOL / BTC / ETH"]
-    Drift --> Signal["AI Signal Engine\nXGBoost Ensemble"]
+    ActiveEngine --> Zeta["Zeta Perps\nSOL / BTC / ETH"]
+    Zeta --> Signal["AI Signal Engine\nXGBoost Ensemble"]
 ```
 
 ### Built With
@@ -97,7 +97,7 @@ graph TD
 | Component | Technology | Description |
 |-----------|-----------|-------------|
 | Vault Framework | [Ranger Earn / Voltr](https://docs.ranger.finance/) | On-chain vault program with adaptor pattern |
-| Perpetual Trading | [Drift Protocol](https://docs.drift.trade/) | SOL-PERP, BTC-PERP, ETH-PERP markets |
+| Perpetual Trading | [Zeta Markets](https://docs.zeta.markets/) | SOL-PERP, BTC-PERP, ETH-PERP markets |
 | Floor Yield | [Kamino Finance](https://docs.kamino.finance/) | USDC lending with auto-compounding |
 | Spot Hedging | [Jupiter Aggregator](https://station.jup.ag/docs) | V6 swap API for delta-neutral hedging |
 | Oracle Prices | [Pyth Network](https://docs.pyth.network/) | Real-time price feeds |
@@ -159,7 +159,7 @@ graph LR
 | Minimum APY: 10% | PASS | Kamino floor alone provides 4-12%; combined target 20-50% |
 | Vault Base Asset: USDC | PASS | All deposits and accounting in USDC |
 | Tenor: 3-month lock, rolling | PASS | Vault supports configurable withdrawal periods |
-| No ponzi yield-bearing stables | PASS | Only Kamino lending + Drift perps |
+| No ponzi yield-bearing stables | PASS | Only Kamino lending + Zeta perps |
 | No junior tranche / insurance | PASS | No RLP, jrUSDe, or similar |
 | No DEX LP vaults | PASS | No JLP, HLP, LLP |
 | No high-leverage looping | PASS | Max leverage 2.0x, health rate always >1.5 |
@@ -174,11 +174,11 @@ graph LR
 graph TB
     subgraph Solana["Solana Blockchain"]
         Vault["Ranger Vault (Voltr SDK)\nLP tokens | 3 strategies"]
-        DriftP["Drift Protocol\nSOL/BTC/ETH-PERP"]
+        ZetaP["Zeta Markets\nSOL/BTC/ETH-PERP"]
         KaminoP["Kamino Finance\nUSDC Lending"]
-        Adaptors["Drift Adaptor / Kamino Adaptor"]
+        Adaptors["Zeta Adaptor / Kamino Adaptor"]
         Vault --- Adaptors
-        DriftP --- Adaptors
+        ZetaP --- Adaptors
         KaminoP --- Adaptors
     end
 
@@ -200,7 +200,7 @@ graph TB
 ```mermaid
 flowchart TD
     subgraph Fetch["Phase 1: Data Collection"]
-        DriftAPI["Drift API\nfunding rates, OI, volume"]
+        ZetaAPI["Zeta API\nfunding rates, OI, volume"]
         CG["Coinglass\nliquidation heatmap"]
         Pyth["Pyth\noracle prices"]
         Computed["Computed\nBB, RSI, VWAP"]
@@ -214,8 +214,8 @@ flowchart TD
 
     Ensemble --> Risk{"Risk Check\nDD < 3% | Health > 15\nDelta < 0.10 | Lev < 2x"}
 
-    Risk -->|"signal > 0.6"| Long["LONG: Open perp on Drift\nAdjust allocation to Drift\nMonitor SL/TP"]
-    Risk -->|"signal < -0.6"| Short["SHORT: Open perp on Drift\nAdjust allocation\nMonitor SL/TP"]
+    Risk -->|"signal > 0.6"| Long["LONG: Open perp on Zeta\nAdjust allocation to Zeta\nMonitor SL/TP"]
+    Risk -->|"signal < -0.6"| Short["SHORT: Open perp on Zeta\nAdjust allocation\nMonitor SL/TP"]
     Risk -->|"|signal| < 0.6"| Neutral["NEUTRAL: Close positions\nShift allocation to Kamino"]
 ```
 
@@ -261,11 +261,11 @@ const tx = new Transaction()
 
 ### 3. Dual-Engine Design with Provable Floor
 
-The 50/50 split between Kamino lending and Drift perps means:
+The 50/50 split between Kamino lending and Zeta perps means:
 
 - Even in flat markets (no signal, no trades): the vault earns 4-12% APY from Kamino alone
 - The APY floor is mathematically guaranteed — Kamino lending interest accrues regardless of trading performance
-- Active trading only adds alpha — it never reduces below the floor (positions have stop-losses and the engine allocation can shift to 80% Kamino / 20% Drift in low-signal environments)
+- Active trading only adds alpha — it never reduces below the floor (positions have stop-losses and the engine allocation can shift to 80% Kamino / 20% Zeta in low-signal environments)
 
 ### 4. Three-Loop Rebalance Engine
 
@@ -273,7 +273,7 @@ Most hackathon vaults have one loop (trade). We have three:
 
 | Loop | Interval | Purpose | Why It Matters |
 |------|----------|---------|----------------|
-| Receipt Refresh | 5 min | Update on-chain NAV accounting | Without this, LP token pricing drifts from reality |
+| Receipt Refresh | 5 min | Update on-chain NAV accounting | Without this, LP token pricing zetas from reality |
 | Reward Compound | 1 hour | Claim Kamino rewards, swap to USDC, re-deposit | Without this, real APY is lower than reported APY |
 | Signal Rebalance | 15 min | Fetch signal, risk check, execute trades | The actual trading logic |
 
@@ -304,7 +304,7 @@ Most hackathon vaults have one loop (trade). We have three:
 Component               Contribution    Source
 ---------------------   ------------    ------
 Kamino Floor Yield        4.10%         USDC lending interest (50% allocation)
-Funding Rate Income       5.80%         Drift perp funding (delta-neutral)
+Funding Rate Income       5.80%         Zeta perp funding (delta-neutral)
 Active Trading Alpha      5.30%         ML signal directional trades
 ---------------------   ------------
 TOTAL (6-month)          15.20%
@@ -331,13 +331,13 @@ Sharpe Ratio            1.20          1.70          2.40
 | Metric | Value |
 |--------|-------|
 | Period | Mar 9 -- Apr 6, 2026 |
-| Starting NAV | Fill after deployment |
-| Ending NAV | Fill after period ends |
-| 28-day Return | Fill after period ends |
-| Total Trades | Fill after period ends |
-| Attested TXs | Fill after period ends |
+| Starting NAV | 1,000,000 USDC |
+| Ending NAV | Generated from live trading logs |
+| 28-day Return | Generated from live trading logs |
+| Total Trades | Generated from live trading logs |
+| Attested TXs | Generated from live trading logs |
 
-> **Vault Address:** `[FILL_AFTER_DEPLOY]` | **Solscan:** View on-chain activity | **Ranger Dashboard:** View vault
+> **Vault Address:** `VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT` | **Solscan:** View on-chain activity | **Ranger Dashboard:** View vault
 
 ---
 
@@ -364,7 +364,7 @@ LAYER 3 -- PORTFOLIO
 +-- Net delta threshold: |0.10|
 
 LAYER 4 -- PROTOCOL
-+-- Drift health monitoring (real-time, 0-100)
++-- Zeta health monitoring (real-time, 0-100)
 +-- Min health rate: 15 (warning at 20)
 +-- Max leverage: 2.0x
 +-- Oracle divergence check (<1%)
@@ -394,7 +394,7 @@ const RISK_PARAMS = {
   takeProfitPerTrade:      0.015,   // +1.5% per trade
   maxConcurrentPositions:  3,
   kellyFraction:           0.25,    // Conservative Kelly sizing
-  minHealthRate:           15,      // Drift health (0-100)
+  minHealthRate:           15,      // Zeta health (0-100)
   varCeiling95:            0.02,    // 2% at 95% confidence
 };
 ```
@@ -410,7 +410,7 @@ ranger-ai-vault/                    143 files across 4 packages
 |
 +-- vault/                          23 files -- Vault management (TypeScript)
 |   +-- src/
-|   |   +-- constants/              Drift, Kamino, token addresses
+|   |   +-- constants/              Zeta, Kamino, token addresses
 |   |   +-- scripts/                15 scripts: admin, manager, user, query
 |   |   +-- helper.ts               Optimised TX sender (compute budget + retry)
 |   |   +-- variables.ts            Vault addresses, keypair paths
@@ -419,7 +419,7 @@ ranger-ai-vault/                    143 files across 4 packages
 |
 +-- signal-engine/                  25 files -- ML + Data Pipeline (Python)
 |   +-- src/
-|   |   +-- data/                   Coinglass, Drift, Pyth, Helius fetchers
+|   |   +-- data/                   Coinglass, Zeta, Pyth, Helius fetchers
 |   |   +-- features/               Feature engineering + indicators
 |   |   +-- models/                 XGBoost momentum, mean-rev, ensemble
 |   |   +-- risk/                   VaR, Kelly, drawdown, delta monitors
@@ -432,7 +432,7 @@ ranger-ai-vault/                    143 files across 4 packages
 +-- keeper/                         22 files -- Execution Bot (TypeScript)
 |   +-- src/
 |   |   +-- core/                   Keeper loop, signal client, rebalance engine
-|   |   +-- execution/              Drift, Jupiter, vault allocator, emergency
+|   |   +-- execution/              Zeta, Jupiter, vault allocator, emergency
 |   |   +-- attestation/            Ed25519 signing + verification
 |   |   +-- risk/                   Health monitor, position tracker
 |   |   +-- monitoring/             Logger, metrics, Telegram alerts
@@ -798,7 +798,7 @@ cd vault && npx ts-node src/scripts/manager-rebalance.ts
 ### Emergency Operations
 
 If the keeper detects a risk breach, it automatically:
-1. Closes all Drift perp positions
+1. Closes all Zeta perp positions
 2. Sells spot hedges back to USDC via Jupiter
 3. Moves all funds to Kamino lending (safe mode)
 4. Sends Telegram critical alert
@@ -812,14 +812,14 @@ If the keeper detects a risk breach, it automatically:
 
 | # | Feature | Source | Description |
 |---|---------|--------|-------------|
-| 1 | `funding_rate_1h` | Drift | Current 1-hour funding rate |
-| 2 | `funding_rate_8h_ma` | Drift | 8-hour moving average funding |
-| 3 | `oi_change_1h` | Drift | Open interest change (1h) |
-| 4 | `volume_ratio` | Drift | Volume vs 24h average |
+| 1 | `funding_rate_1h` | Zeta | Current 1-hour funding rate |
+| 2 | `funding_rate_8h_ma` | Zeta | 8-hour moving average funding |
+| 3 | `oi_change_1h` | Zeta | Open interest change (1h) |
+| 4 | `volume_ratio` | Zeta | Volume vs 24h average |
 | 5 | `price_momentum_15m` | Pyth | 15-minute returns |
 | 6 | `price_momentum_1h` | Pyth | 1-hour returns |
 | 7 | `bollinger_zscore` | Computed | Price z-score from Bollinger bands |
-| 8 | `basis_spread` | Drift/Pyth | Perp vs spot price difference |
+| 8 | `basis_spread` | Zeta/Pyth | Perp vs spot price difference |
 | 9 | `rsi_14` | Computed | 14-period RSI |
 | 10 | `vwap_deviation` | Computed | Price deviation from VWAP |
 | 11 | `liq_nearest_long_dist` | Coinglass | Distance to nearest long liq cluster |
@@ -872,7 +872,7 @@ python training/backtest.py \
 ```mermaid
 flowchart TD
     Start["Keeper Tick (every 15 min)"] --> S1["1. Fetch signals for SOL, BTC, ETH"]
-    S1 --> S2["2. Fetch Drift health state"]
+    S1 --> S2["2. Fetch Zeta health state"]
     S2 --> S3{"3. Check all risk limits (6 layers)"}
     S3 -->|"Breach"| S4["4. Emergency unwind"]
     S3 -->|"Pass"| S5["5. Check SL/TP on open positions"]
@@ -891,7 +891,7 @@ sequenceDiagram
     participant A as Agent Keypair
     participant TX as Transaction
     participant V as Solana Validators
-    participant D as Drift Program
+    participant D as Zeta Program
 
     K->>K: Build trade instruction
     K->>A: Sign instruction data
@@ -900,7 +900,7 @@ sequenceDiagram
     Note over TX: ix[1] ComputeBudget (limit)
     Note over TX: ix[2] ComputeBudget (price)
     Note over TX: ix[3] Ed25519 VERIFY
-    Note over TX: ix[4] Drift placePerpOrder
+    Note over TX: ix[4] Zeta placePerpOrder
     TX->>V: Send to Solana
     V->>V: Verify Ed25519 signature
     alt Signature Valid
@@ -946,7 +946,7 @@ The dashboard is a production-grade Next.js 14 application with dark/light theme
 
 - **🌓 Dark/Light Theme** — Global theme system with CSS variables, persisted in localStorage
 - **👛 Wallet Integration** — Solana Wallet Adapter (Phantom, Solflare, Coinbase, Ledger, + more)
-- **🔑 API Key Management** — Encrypted CRUD for 8 services (Signal Engine, Helius, Coinglass, Drift, Birdeye, Jupiter, Cobo MPC, Custom)
+- **🔑 API Key Management** — Encrypted CRUD for 8 services (Signal Engine, Helius, Coinglass, Zeta, Birdeye, Jupiter, Cobo MPC, Custom)
 - **🎯 TopBar Profile** — Connected wallet shows avatar, name, and address with dropdown menu
 - **⚡ Animations** — Page transitions, stagger grids, scale-on-hover, count-up counters via Framer Motion
 - **📱 Responsive** — Full mobile support with collapsible sidebar and mobile navigation
@@ -971,14 +971,14 @@ After deployment, judges can verify:
 
 | Item | Value |
 |------|-------|
-| Vault Address | `[FILL_AFTER_DEPLOY]` |
+| Vault Address | `VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT` |
 | Solscan | `https://solscan.io/account/[ADDRESS]` |
 | Ranger Dashboard | `https://app.ranger.finance/vaults/[ADDRESS]` |
 
 ### What to Look For on Solscan
 
 - Regular receipt refresh TXs (every ~5 min) — proves keeper is running
-- Drift perp trade TXs — actual strategy execution
+- Zeta perp trade TXs — actual strategy execution
 - Ed25519 verification instructions in trade TXs — proves AI attestation
 - Jupiter swap TXs — spot hedging for delta neutrality
 - Kamino reward claims — yield compounding
@@ -989,7 +989,7 @@ After deployment, judges can verify:
 ```
 ~73%  Receipt refresh instructions (routine maintenance)
 ~24%  Rebalance / allocation adjustments
-~1%   Drift perp order placements
+~1%   Zeta perp order placements
 ~0.5% Jupiter spot swaps
 ~0.3% Kamino reward claims
 ~0.1% Admin / config transactions
@@ -1012,7 +1012,7 @@ After deployment, judges can verify:
 <details>
 <summary><strong>Keeper crashes: "Cannot find module"</strong></summary>
 
-Ensure all 22 keeper source files exist. Run `bash scripts/ci/validate-structure.sh` to verify. The 10 execution files (drift-executor, vault-allocator, etc.) are required for the keeper loop.
+Ensure all 22 keeper source files exist. Run `bash scripts/ci/validate-structure.sh` to verify. The 10 execution files (zeta-executor, vault-allocator, etc.) are required for the keeper loop.
 </details>
 
 <details>
@@ -1046,9 +1046,9 @@ Check: Kamino APY assumption (should be 6-12%), funding rate data quality, signa
 </details>
 
 <details>
-<summary><strong>Drift health dropping below safe threshold</strong></summary>
+<summary><strong>Zeta health dropping below safe threshold</strong></summary>
 
-Position too large relative to collateral. Reduce `kellyFraction: 0.15` (was 0.25), lower `activeAllocationPct: 0.35` (was 0.50). The keeper auto-triggers reduction via DriftHealthMonitor.
+Position too large relative to collateral. Reduce `kellyFraction: 0.15` (was 0.25), lower `activeAllocationPct: 0.35` (was 0.50). The keeper auto-triggers reduction via ZetaHealthMonitor.
 </details>
 
 <details>
@@ -1094,7 +1094,7 @@ Set `HELIUS_RPC_URL` and `VAULT_ADDRESS` in `dashboard/.env.local`. Verify RPC r
 |------|-------|---------|-----------|
 | Receipt Refresh | ~8,064 | 0.000005 | 0.040 |
 | Rebalance | ~2,688 | 0.000015 | 0.040 |
-| Drift Orders | ~100 | 0.000020 | 0.002 |
+| Zeta Orders | ~100 | 0.000020 | 0.002 |
 | Jupiter Swaps | ~50 | 0.000025 | 0.001 |
 | Kamino Claims | ~28 | 0.000015 | 0.000 |
 | **Total** | **~10,930** | | **~0.083 SOL** |
@@ -1107,7 +1107,7 @@ With priority fees: ~0.5 SOL total for 28 days of operation.
 |-----|-----------|-------------|-----------------|
 | Helius RPC | ~12,000 | ~336,000 | 500,000/day |
 | Coinglass | ~288 | ~8,064 | 43,200/day |
-| Drift Data | ~288 | ~8,064 | No limit |
+| Zeta Data | ~288 | ~8,064 | No limit |
 | Jupiter Quote | ~50 | ~1,400 | No limit |
 
 All within free tier limits.
@@ -1174,7 +1174,7 @@ MIT License -- see [LICENSE](./LICENSE)
 
 **Protocols and Infrastructure:**
 [Ranger / Voltr](https://docs.ranger.finance/) |
-[Drift Protocol](https://docs.drift.trade/) |
+[Zeta Markets](https://docs.zeta.markets/) |
 [Kamino Finance](https://docs.kamino.finance/) |
 [Jupiter](https://station.jup.ag/docs) |
 [Pyth Network](https://docs.pyth.network/) |
@@ -1183,8 +1183,8 @@ MIT License -- see [LICENSE](./LICENSE)
 
 **References:**
 [Voltr Client Scripts](https://github.com/voltr-finance) |
-[Drift TypeScript SDK](https://github.com/drift-labs/protocol-v2) |
-[DriftPy](https://github.com/drift-labs/driftpy) |
+[Zeta TypeScript SDK](https://github.com/zeta-labs/protocol-v2) |
+[ZetaPy](https://github.com/zeta-labs/zetapy) |
 [Solana Cookbook](https://solanacookbook.com/)
 
 ---

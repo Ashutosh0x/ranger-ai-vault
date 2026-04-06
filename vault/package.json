@@ -25,7 +25,7 @@
     "@voltr/vault-sdk": "latest",
     "@solana/web3.js": "^1.95.0",
     "@solana/spl-token": "^0.4.0",
-    "@drift-labs/sdk": "^2.70.0",
+    "@zetamarkets/sdk": "^2.70.0",
     "@coral-xyz/anchor": "^0.30.0",
     "@metaplex-foundation/mpl-token-metadata": "^3.0.0",
     "bs58": "^5.0.0",

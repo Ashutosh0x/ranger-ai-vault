@@ -10,8 +10,8 @@ import {
   RPC_URL,
   VAULT_ADDRESS,
   KAMINO_STRATEGY_ADDRESS,
-  DRIFT_LEND_STRATEGY_ADDRESS,
-  DRIFT_PERPS_STRATEGY_ADDRESS,
+  ZETA_LEND_STRATEGY_ADDRESS,
+  ZETA_PERPS_STRATEGY_ADDRESS,
 } from "../variables";
 
 async function main() {
@@ -31,8 +31,8 @@ async function main() {
 
   const strategies = [
     { name: "Kamino Lending (Floor)", address: KAMINO_STRATEGY_ADDRESS },
-    { name: "Drift Lend (Fallback)", address: DRIFT_LEND_STRATEGY_ADDRESS },
-    { name: "Drift Perps (Active)", address: DRIFT_PERPS_STRATEGY_ADDRESS },
+    { name: "Zeta Lend (Fallback)", address: ZETA_LEND_STRATEGY_ADDRESS },
+    { name: "Zeta Perps (Active)", address: ZETA_PERPS_STRATEGY_ADDRESS },
   ].filter((s) => s.address);
 
   console.log("\n══════════════════════════════════════════");

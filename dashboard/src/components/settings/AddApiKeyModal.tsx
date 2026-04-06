@@ -16,7 +16,7 @@ const SERVICES: Array<{ value: ApiService; label: string; icon: LucideIcon; icon
   { value: "SIGNAL_ENGINE", label: "Signal Engine", icon: Zap, iconColor: "text-vault-accent", desc: "Local signal generation" },
   { value: "HELIUS_RPC", label: "Helius RPC", icon: Link, iconColor: "text-blue-400", desc: "Solana RPC endpoint" },
   { value: "COINGLASS", label: "Coinglass API", icon: BarChart3, iconColor: "text-purple-400", desc: "Funding & OI data" },
-  { value: "DRIFT", label: "Drift Protocol", icon: Waves, iconColor: "text-cyan-400", desc: "Perps & spot data" },
+  { value: "DRIFT", label: "Zeta Markets", icon: Waves, iconColor: "text-cyan-400", desc: "Perps & spot data" },
   { value: "BIRDEYE", label: "Birdeye", icon: ScanEye, iconColor: "text-amber-400", desc: "Token price feeds" },
   { value: "JUPITER", label: "Jupiter", icon: Orbit, iconColor: "text-green-400", desc: "DEX aggregator" },
   { value: "COBO_MPC", label: "Cobo MPC", icon: ShieldCheck, iconColor: "text-rose-400", desc: "MPC wallet infra" },

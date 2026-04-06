@@ -18,8 +18,8 @@ on-chain (Voltr SDK constraints).
 | Kelly Fraction         | 0.25   | Quarter-Kelly for safety          |
 | Max Concurrent Positions| 3     | Caps exposure                     |
 | Min Confidence         | 0.4    | Below this, no trades taken       |
-| Drift Health Warning   | 20     | Start reducing positions          |
-| Drift Health Critical  | 10     | Emergency unwind all              |
+| Zeta Health Warning   | 20     | Start reducing positions          |
+| Zeta Health Critical  | 10     | Emergency unwind all              |
 | Kamino Floor           | 40%    | Minimum % in lending (safe yield) |
 
 ## Layer 1: Signal Engine Risk (Python)
@@ -60,20 +60,20 @@ Every trade must pass 6 checks before execution:
 - Enforces per-trade stop-loss (-0.5%) and take-profit (+1.5%)
 - Automatically closes positions that breach limits
 
-### Drift Health Monitor
-- Real DriftUser.getHealth() calls every tick
+### Zeta Health Monitor
+- Real ZetaUser.getHealth() calls every tick
 - Health < 20: start reducing positions proportionally
 - Health < 10: emergency unwind ALL positions
-- Prevents Drift liquidation events
+- Prevents Zeta liquidation events
 
 ### Emergency Unwind
 Triggered by any of:
-- Drift health critical
+- Zeta health critical
 - Daily/monthly drawdown breach
 - Signal server failure (prolonged)
 
 Sequence:
-1. Close all Drift perp positions
+1. Close all Zeta perp positions
 2. Sell spot hedge positions back to USDC
 3. Move all vault funds to Kamino lending
 4. Send Telegram alert
@@ -94,4 +94,4 @@ Sequence:
 ### Voltr Strategy Receipts
 - Receipt values refreshed every 5 minutes
 - Ensures accurate NAV and LP token pricing
-- Prevents stale accounting from drift in values
+- Prevents stale accounting from zeta in values

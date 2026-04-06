@@ -11,7 +11,7 @@ export default function CopyTradingPage() {
           Copy Trading
         </h1>
         <p className="text-gray-400 mt-1">
-          Mirror the AI vault&apos;s strategy in your own Drift sub-account
+          Mirror the AI vault&apos;s strategy in your own Zeta sub-account
         </p>
       </div>
 
@@ -28,7 +28,7 @@ export default function CopyTradingPage() {
           <h2 className="text-2xl font-bold mb-2">AI-Powered Copy Trading</h2>
           <p className="text-gray-400 max-w-xl">
             Automatically mirror every signal from the Ranger AI ensemble into your
-            own Drift sub-account. Set your own risk limits, position sizing, and
+            own Zeta sub-account. Set your own risk limits, position sizing, and
             asset allowlist.
           </p>
         </div>
@@ -53,7 +53,7 @@ export default function CopyTradingPage() {
             step: "03",
             icon: Activity,
             title: "Mirror Execution",
-            desc: "Ed25519-attested trades are mirrored to your Drift sub-account with configurable sizing.",
+            desc: "Ed25519-attested trades are mirrored to your Zeta sub-account with configurable sizing.",
           },
         ].map((item) => (
           <div key={item.step} className="glass-card p-6">

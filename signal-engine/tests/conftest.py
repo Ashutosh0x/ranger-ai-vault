@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 os.environ.setdefault("COINGLASS_API_KEY", "test_key_not_real")
 os.environ.setdefault("KEEPER_SECRET", "test_secret_ci")
-os.environ.setdefault("DRIFT_ENV", "devnet")
+os.environ.setdefault("ZETA_ENV", "devnet")
 
 
 @pytest.fixture

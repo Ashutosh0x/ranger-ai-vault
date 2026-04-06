@@ -55,7 +55,7 @@ export class RebalanceEngine {
   // LOOP 1: RECEIPT REFRESH (every 5 min)
   // On-chain receipt values must stay current for accurate NAV.
   // Without this: LP token pricing, APY tracking, drawdown
-  // calculations ALL silently drift from actual values.
+  // calculations ALL silently zeta from actual values.
   // =================================================================
 
   async refreshReceipts(): Promise<void> {
@@ -150,17 +150,17 @@ export class RebalanceEngine {
   // =================================================================
   // LOOP 3: SIGNAL-DRIVEN REBALANCE (called by keeper-loop)
   // Adjusts allocation between Engine A (Kamino) and
-  // Engine B (Drift) based on AI signal strength.
+  // Engine B (Zeta) based on AI signal strength.
   // =================================================================
 
   async rebalanceFromSignal(
     targetKaminoPct: number,
-    targetDriftPct: number,
+    targetZetaPct: number,
   ): Promise<void> {
-    const total = targetKaminoPct + targetDriftPct;
+    const total = targetKaminoPct + targetZetaPct;
     if (Math.abs(total - 1.0) > 0.01) {
       logger.error(
-        `Invalid allocation: Kamino=${targetKaminoPct} + Drift=${targetDriftPct} = ${total} (must equal 1.0)`,
+        `Invalid allocation: Kamino=${targetKaminoPct} + Zeta=${targetZetaPct} = ${total} (must equal 1.0)`,
       );
       return;
     }
@@ -172,17 +172,17 @@ export class RebalanceEngine {
     }
 
     const targetKamino = Math.floor(totalAssets * targetKaminoPct);
-    const targetDrift = Math.floor(totalAssets * targetDriftPct);
+    const targetZeta = Math.floor(totalAssets * targetZetaPct);
 
     const currentKamino = await this.getStrategyBalance("kamino-lending");
-    const currentDrift = await this.getStrategyBalance("drift-perps");
+    const currentZeta = await this.getStrategyBalance("zeta-perps");
 
     const kaminoDelta = targetKamino - currentKamino;
-    const driftDelta = targetDrift - currentDrift;
+    const zetaDelta = targetZeta - currentZeta;
 
     if (
       Math.abs(kaminoDelta) < this.MIN_REBALANCE &&
-      Math.abs(driftDelta) < this.MIN_REBALANCE
+      Math.abs(zetaDelta) < this.MIN_REBALANCE
     ) {
       logger.debug("Allocation within threshold, skipping rebalance");
       return;
@@ -190,15 +190,15 @@ export class RebalanceEngine {
 
     logger.info(
       `Rebalancing: Kamino ${(currentKamino / 1e6).toFixed(0)} -> ${(targetKamino / 1e6).toFixed(0)} USDC, ` +
-        `Drift ${(currentDrift / 1e6).toFixed(0)} -> ${(targetDrift / 1e6).toFixed(0)} USDC`,
+        `Zeta ${(currentZeta / 1e6).toFixed(0)} -> ${(targetZeta / 1e6).toFixed(0)} USDC`,
     );
 
     // IMPORTANT: Withdraw from over-allocated FIRST, then deposit
     if (kaminoDelta < -this.MIN_REBALANCE) {
       await this.withdrawFromStrategy("kamino-lending", Math.abs(kaminoDelta));
     }
-    if (driftDelta < -this.MIN_REBALANCE) {
-      await this.withdrawFromStrategy("drift-perps", Math.abs(driftDelta));
+    if (zetaDelta < -this.MIN_REBALANCE) {
+      await this.withdrawFromStrategy("zeta-perps", Math.abs(zetaDelta));
     }
 
     await new Promise((r) => setTimeout(r, 2000));
@@ -206,12 +206,12 @@ export class RebalanceEngine {
     if (kaminoDelta > this.MIN_REBALANCE) {
       await this.depositToStrategy("kamino-lending", kaminoDelta);
     }
-    if (driftDelta > this.MIN_REBALANCE) {
-      await this.depositToStrategy("drift-perps", driftDelta);
+    if (zetaDelta > this.MIN_REBALANCE) {
+      await this.depositToStrategy("zeta-perps", zetaDelta);
     }
 
     logger.info(
-      `Rebalanced: Kamino=${(targetKaminoPct * 100).toFixed(1)}%, Drift=${(targetDriftPct * 100).toFixed(1)}%`,
+      `Rebalanced: Kamino=${(targetKaminoPct * 100).toFixed(1)}%, Zeta=${(targetZetaPct * 100).toFixed(1)}%`,
     );
   }
 

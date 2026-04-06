@@ -223,13 +223,13 @@ export async function testConnection(
       }
 
       case "DRIFT": {
-        const res = await fetch("https://dlob.drift.trade/health", {
+        const res = await fetch("https://dlob.zeta.markets/health", {
           signal: AbortSignal.timeout(5000),
         }).catch(() => null);
         const latency = Date.now() - start;
         return res?.ok
-          ? { success: true, latencyMs: latency, message: "Drift API connected" }
-          : { success: false, latencyMs: latency, message: "Drift unreachable" };
+          ? { success: true, latencyMs: latency, message: "Zeta API connected" }
+          : { success: false, latencyMs: latency, message: "Zeta unreachable" };
       }
 
       case "JUPITER": {

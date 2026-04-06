@@ -14,7 +14,7 @@ const config: Config = {
   },
   testTimeout: 30000,
   moduleNameMapper: {
-    "^@drift-labs/sdk$": "<rootDir>/tests/__mocks__/drift-sdk.ts",
+    "^@zetamarkets/sdk$": "<rootDir>/tests/__mocks__/zeta-sdk.ts",
     "^@voltr/vault-sdk$": "<rootDir>/tests/__mocks__/voltr-sdk.ts",
   },
 };

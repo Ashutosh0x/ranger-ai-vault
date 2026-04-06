@@ -3,7 +3,7 @@
 ## 0:00-0:30 -- Introduction
 "This is the AI-Powered Momentum + Mean-Reversion Hybrid Vault,
 built on Ranger Earn. It combines a 50% floor yield engine on
-Kamino with AI-driven perp trading on Drift, wrapped in a
+Kamino with AI-driven perp trading on Zeta, wrapped in a
 delta-neutral framework with Ed25519 cryptographic attestation."
 
 [SCREEN: Architecture diagram]
@@ -11,7 +11,7 @@ delta-neutral framework with Ed25519 cryptographic attestation."
 ## 0:30-1:15 -- Live Vault Walkthrough
 [SCREEN: Dashboard -> Overview page]
 - Show TVL, current APY, NAV per LP token
-- Show strategy allocation pie chart (Kamino vs Drift)
+- Show strategy allocation pie chart (Kamino vs Zeta)
 - Show active signal indicators for SOL, BTC, ETH
 
 [SCREEN: Dashboard -> Vault page]
@@ -29,13 +29,13 @@ delta-neutral framework with Ed25519 cryptographic attestation."
 - Click through to Solscan to verify on-chain
 
 [SCREEN: Dashboard -> Positions page]
-- Show open Drift perp positions
+- Show open Zeta perp positions
 - Show funding rate collection
 
 ## 2:00-2:30 -- Risk Management
 [SCREEN: Dashboard -> Risk page]
 - Show drawdown gauges (daily 3%, monthly 8%)
-- Show Drift health monitor (stays above 40)
+- Show Zeta health monitor (stays above 40)
 - Show net delta gauge (maintained near 0)
 - "Every trade is pre-validated against 6 risk checks
   before execution"

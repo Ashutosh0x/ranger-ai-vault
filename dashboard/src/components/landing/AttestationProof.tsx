@@ -11,7 +11,7 @@ const VAULT = process.env.NEXT_PUBLIC_VAULT_ADDRESS || "";
 export function AttestationProof() {
   const cluster = NETWORK === "mainnet-beta" ? "" : `?cluster=${NETWORK}`;
   const solscanUrl =
-    VAULT && VAULT !== "FILL_AFTER_DEPLOY"
+    VAULT && VAULT !== "VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT"
       ? `https://solscan.io/account/${VAULT}${cluster}`
       : "#";
 
@@ -52,7 +52,7 @@ export function AttestationProof() {
               {[
                 "Ed25519SigVerify instruction in every trade TX",
                 "Receipt refresh TXs every ~5 minutes",
-                "Drift perp order placements",
+                "Zeta perp order placements",
                 "Jupiter spot swap TXs for hedging",
                 "Kamino reward claim + compound TXs",
                 "Consistent activity Mar 9 — Apr 6, 2026",

@@ -36,14 +36,14 @@ The signal engine is a Python-based ML pipeline that runs as a FastAPI server on
 
 ```
 +-------------------+     +-------------------+
-| Coinglass API     |     | Drift Data API    |
+| Coinglass API     |     | Zeta Data API    |
 | - liqHeatmap      |     | - fundingRates    |
 | - liqMap          |     | - candles         |
 +--------+----------+     +--------+----------+
          |                          |
          v                          v
 +--------+----------+     +--------+----------+
-| coinglass_fetcher  |     | drift_fetcher     |
+| coinglass_fetcher  |     | zeta_fetcher     |
 | Rate limit: 30/min |     | No rate limit     |
 +--------+----------+     +--------+----------+
          |                          |
@@ -118,9 +118,9 @@ Fetches liquidation heatmap data from the Coinglass API.
 | BTC-PERP | BTC |
 | ETH-PERP | ETH |
 
-### Drift Fetcher (`src/data/drift_fetcher.py`)
+### Zeta Fetcher (`src/data/zeta_fetcher.py`)
 
-Fetches funding rates, open interest, and OHLCV candles from the Drift Data API.
+Fetches funding rates, open interest, and OHLCV candles from the Zeta Data API.
 
 | Endpoint | Data | Frequency |
 |----------|------|-----------|

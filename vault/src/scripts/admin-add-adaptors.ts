@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════
 // Admin Script: Add Adaptors
 // ═══════════════════════════════════════════════════════
-// Adds Drift and Kamino adaptors to the vault.
+// Adds Zeta and Kamino adaptors to the vault.
 // Must be run after admin-init-vault.ts
 
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -15,7 +15,7 @@ import {
 } from "../helper";
 import { RPC_URL, ADMIN_KEYPAIR_PATH, VAULT_ADDRESS } from "../variables";
 import {
-  DRIFT_ADAPTOR_PROGRAM_ID,
+  ZETA_ADAPTOR_PROGRAM_ID,
   KAMINO_ADAPTOR_PROGRAM_ID,
 } from "../constants";
 
@@ -32,23 +32,23 @@ async function main() {
   const adminKp = loadKeypair(ADMIN_KEYPAIR_PATH);
   const vault = new PublicKey(VAULT_ADDRESS);
 
-  // Add Drift Adaptor
-  logStep("Adding Drift Adaptor...", {
-    adaptor: DRIFT_ADAPTOR_PROGRAM_ID.toString(),
+  // Add Zeta Adaptor
+  logStep("Adding Zeta Adaptor...", {
+    adaptor: ZETA_ADAPTOR_PROGRAM_ID.toString(),
   });
 
-  const addDriftAdaptorIx = await client.createAddAdaptorIx({
+  const addZetaAdaptorIx = await client.createAddAdaptorIx({
     vault,
     admin: adminKp.publicKey,
-    adaptorProgram: DRIFT_ADAPTOR_PROGRAM_ID,
+    adaptorProgram: ZETA_ADAPTOR_PROGRAM_ID,
   });
 
   const sig1 = await sendAndConfirmOptimisedTx(
     connection,
-    [addDriftAdaptorIx],
+    [addZetaAdaptorIx],
     [adminKp],
   );
-  logSuccess(`Drift Adaptor added: ${sig1}`);
+  logSuccess(`Zeta Adaptor added: ${sig1}`);
 
   // Add Kamino Adaptor
   logStep("Adding Kamino Adaptor...", {

@@ -20,7 +20,7 @@ export default function PositionsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Positions</h1>
-        <p className="text-gray-400 mt-1">Active Drift perp positions managed by the AI keeper</p>
+        <p className="text-gray-400 mt-1">Active Zeta perp positions managed by the AI keeper</p>
       </div>
 
       {/* Summary Cards */}

@@ -3,7 +3,7 @@
 // stop-loss / take-profit per trade
 // =================================================================
 
-import { DriftExecutor, PositionInfo } from "../execution/drift-executor";
+import { ZetaExecutor, PositionInfo } from "../execution/zeta-executor";
 import { logger } from "../monitoring/logger";
 import { RISK_PARAMS } from "../config";
 
@@ -21,14 +21,14 @@ export interface TrackedPosition {
 }
 
 export class PositionTracker {
-  private driftExecutor: DriftExecutor;
+  private zetaExecutor: ZetaExecutor;
   private trackedEntries: Map<
     string,
     { entryPrice: number; entryTime: number; direction: string }
   > = new Map();
 
-  constructor(driftExecutor: DriftExecutor) {
-    this.driftExecutor = driftExecutor;
+  constructor(zetaExecutor: ZetaExecutor) {
+    this.zetaExecutor = zetaExecutor;
   }
 
   /**
@@ -62,7 +62,7 @@ export class PositionTracker {
    * Returns list of positions that should be closed
    */
   async checkAllPositions(): Promise<TrackedPosition[]> {
-    const allPositions = await this.driftExecutor.getAllPositions();
+    const allPositions = await this.zetaExecutor.getAllPositions();
     const results: TrackedPosition[] = [];
 
     for (const pos of allPositions) {
@@ -131,7 +131,7 @@ export class PositionTracker {
    * Get count of currently open positions
    */
   async getOpenPositionCount(): Promise<number> {
-    const positions = await this.driftExecutor.getAllPositions();
+    const positions = await this.zetaExecutor.getAllPositions();
     return positions.length;
   }
 
@@ -139,7 +139,7 @@ export class PositionTracker {
    * Get total unrealized PnL across all positions
    */
   async getTotalUnrealizedPnl(): Promise<number> {
-    const positions = await this.driftExecutor.getAllPositions();
+    const positions = await this.zetaExecutor.getAllPositions();
     return positions.reduce((sum, p) => sum + p.unrealizedPnl, 0);
   }
 }

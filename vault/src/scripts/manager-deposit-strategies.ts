@@ -2,7 +2,7 @@
 // Manager Script: Deposit to Strategies
 // ═══════════════════════════════════════════════════════
 // Allocates USDC from vault idle balance into strategies.
-// Default split: 50% Kamino, 25% Drift Lend, 25% Drift Perps
+// Default split: 50% Kamino, 25% Zeta Lend, 25% Zeta Perps
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
@@ -18,11 +18,11 @@ import {
   MANAGER_KEYPAIR_PATH,
   VAULT_ADDRESS,
   KAMINO_STRATEGY_ADDRESS,
-  DRIFT_LEND_STRATEGY_ADDRESS,
-  DRIFT_PERPS_STRATEGY_ADDRESS,
+  ZETA_LEND_STRATEGY_ADDRESS,
+  ZETA_PERPS_STRATEGY_ADDRESS,
   KAMINO_ALLOCATION,
-  DRIFT_LEND_ALLOCATION,
-  DRIFT_PERPS_ALLOCATION,
+  ZETA_LEND_ALLOCATION,
+  ZETA_PERPS_ALLOCATION,
 } from "../variables";
 
 interface Allocation {
@@ -51,14 +51,14 @@ async function main() {
       amount: KAMINO_ALLOCATION,
     },
     {
-      name: "Drift Lend",
-      strategyAddress: DRIFT_LEND_STRATEGY_ADDRESS,
-      amount: DRIFT_LEND_ALLOCATION,
+      name: "Zeta Lend",
+      strategyAddress: ZETA_LEND_STRATEGY_ADDRESS,
+      amount: ZETA_LEND_ALLOCATION,
     },
     {
-      name: "Drift Perps",
-      strategyAddress: DRIFT_PERPS_STRATEGY_ADDRESS,
-      amount: DRIFT_PERPS_ALLOCATION,
+      name: "Zeta Perps",
+      strategyAddress: ZETA_PERPS_STRATEGY_ADDRESS,
+      amount: ZETA_PERPS_ALLOCATION,
     },
   ].filter((a) => a.strategyAddress);
 

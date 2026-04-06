@@ -13,7 +13,7 @@ We incorporate real-time liquidation data from Coinglass as ML features:
 
 ### Capital Allocation
 - **Engine A (50%)**: Kamino Lending — USDC → 8-10% base APY (floor yield, always positive)
-- **Engine B (50%)**: Drift Perps — ML signal-driven, momentum + mean-reversion blend
+- **Engine B (50%)**: Zeta Perps — ML signal-driven, momentum + mean-reversion blend
 
 ### Signal Pipeline
 1. Fetch data: funding rates, OI, volume, liquidation heatmap, oracle prices

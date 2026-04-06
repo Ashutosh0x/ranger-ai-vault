@@ -36,7 +36,7 @@ export const RANGER_VAULT_CONFIG = {
 
   // Allocation targets (percentage)
   kaminoAllocationPct: 50,
-  driftAllocationPct: 50,
+  zetaAllocationPct: 50,
 } as const;
 
 // Default compute budget for transactions

@@ -50,7 +50,7 @@ const LAYERS = [
     layer: "Layer 4",
     title: "Protocol",
     items: [
-      "Drift health ≥ 15",
+      "Zeta health ≥ 15",
       "Max leverage 2.0x",
       "Oracle divergence < 1%",
     ],

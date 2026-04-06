@@ -22,7 +22,7 @@ const STEPS = [
     icon: TrendingUp,
     step: "03",
     title: "Earn Yield",
-    desc: "50% in Kamino lending for floor yield (4-12% APY). 50% in Drift perps for alpha capture. Combined target: 20-50% APY with controlled risk.",
+    desc: "50% in Kamino lending for floor yield (4-12% APY). 50% in Zeta perps for alpha capture. Combined target: 20-50% APY with controlled risk.",
   },
 ];
 

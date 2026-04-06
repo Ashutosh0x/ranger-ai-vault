@@ -17,8 +17,8 @@ import {
   ADMIN_KEYPAIR_PATH,
   VAULT_ADDRESS,
   KAMINO_STRATEGY_ADDRESS,
-  DRIFT_LEND_STRATEGY_ADDRESS,
-  DRIFT_PERPS_STRATEGY_ADDRESS,
+  ZETA_LEND_STRATEGY_ADDRESS,
+  ZETA_PERPS_STRATEGY_ADDRESS,
 } from "../variables";
 
 async function main() {
@@ -36,8 +36,8 @@ async function main() {
 
   const strategyAddresses = [
     { name: "Kamino Lending", address: KAMINO_STRATEGY_ADDRESS },
-    { name: "Drift Lend", address: DRIFT_LEND_STRATEGY_ADDRESS },
-    { name: "Drift Perps", address: DRIFT_PERPS_STRATEGY_ADDRESS },
+    { name: "Zeta Lend", address: ZETA_LEND_STRATEGY_ADDRESS },
+    { name: "Zeta Perps", address: ZETA_PERPS_STRATEGY_ADDRESS },
   ].filter((s) => s.address);
 
   for (const strategy of strategyAddresses) {

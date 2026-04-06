@@ -105,14 +105,14 @@ export default function SignalsPage() {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { name: "funding_rate_1h", source: "Drift" },
-            { name: "funding_rate_8h_ma", source: "Drift" },
-            { name: "oi_change_1h", source: "Drift" },
-            { name: "volume_ratio", source: "Drift" },
+            { name: "funding_rate_1h", source: "Zeta" },
+            { name: "funding_rate_8h_ma", source: "Zeta" },
+            { name: "oi_change_1h", source: "Zeta" },
+            { name: "volume_ratio", source: "Zeta" },
             { name: "price_momentum_15m", source: "Pyth" },
             { name: "price_momentum_1h", source: "Pyth" },
             { name: "bollinger_zscore", source: "Computed" },
-            { name: "basis_spread", source: "Drift/Pyth" },
+            { name: "basis_spread", source: "Zeta/Pyth" },
             { name: "rsi_14", source: "Computed" },
             { name: "vwap_deviation", source: "Computed" },
             { name: "liq_nearest_long_dist", source: "Coinglass" },

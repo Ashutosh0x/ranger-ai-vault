@@ -3,18 +3,18 @@
 // =================================================================
 
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { DriftClient, Wallet } from "@drift-labs/sdk";
+import { ZetaClient, Wallet } from "@zetamarkets/sdk";
 
 import { SignalClient } from "./signal-client";
 import { StateManager } from "./state-manager";
 import { RebalanceEngine } from "./rebalance-engine";
-import { DriftExecutor } from "../execution/drift-executor";
+import { ZetaExecutor } from "../execution/zeta-executor";
 import { VaultAllocator } from "../execution/vault-allocator";
 import { JupiterExecutor } from "../execution/jupiter-executor";
 import { EmergencyUnwind } from "../execution/emergency-unwind";
 import { RiskChecker } from "../risk/risk-checker";
 import { PositionTracker } from "../risk/position-tracker";
-import { DriftHealthMonitor } from "../risk/drift-health-monitor";
+import { ZetaHealthMonitor } from "../risk/zeta-health-monitor";
 import { AIAttestor } from "../attestation/ai-attestation";
 import { AttestationVerifier } from "../attestation/attestation-verifier";
 import { MetricsCollector } from "../monitoring/metrics";
@@ -33,17 +33,17 @@ export class KeeperLoop {
   private metrics: MetricsCollector;
   private alerter: Alerter;
 
-  // Execution layer (initialized after Drift connects)
-  private driftExecutor!: DriftExecutor;
+  // Execution layer (initialized after Zeta connects)
+  private zetaExecutor!: ZetaExecutor;
   private vaultAllocator!: VaultAllocator;
   private jupiterExecutor!: JupiterExecutor;
   private emergencyUnwind!: EmergencyUnwind;
   private positionTracker!: PositionTracker;
-  private healthMonitor!: DriftHealthMonitor;
+  private healthMonitor!: ZetaHealthMonitor;
   private rebalanceEngine!: RebalanceEngine;
 
   private connection!: Connection;
-  private driftClient!: DriftClient;
+  private zetaClient!: ZetaClient;
   private initialized: boolean = false;
 
   constructor() {
@@ -73,27 +73,27 @@ export class KeeperLoop {
         logger.warn("Using ephemeral manager keypair -- generate a persistent one for production");
       }
 
-      // Initialize Drift client
+      // Initialize Zeta client
       const wallet = new Wallet(managerKp);
-      this.driftClient = new DriftClient({
+      this.zetaClient = new ZetaClient({
         connection: this.connection,
         wallet,
         env: "mainnet-beta",
       });
-      await this.driftClient.subscribe();
+      await this.zetaClient.subscribe();
 
       // Initialize execution modules
       const vaultAddress = new PublicKey(VAULT_CONFIG.vaultAddress || Keypair.generate().publicKey);
 
-      this.driftExecutor = new DriftExecutor(this.driftClient);
+      this.zetaExecutor = new ZetaExecutor(this.zetaClient);
       this.vaultAllocator = new VaultAllocator(this.connection, managerKp, vaultAddress);
       this.jupiterExecutor = new JupiterExecutor(this.connection, managerKp);
-      this.positionTracker = new PositionTracker(this.driftExecutor);
-      this.healthMonitor = new DriftHealthMonitor(this.driftClient);
+      this.positionTracker = new PositionTracker(this.zetaExecutor);
+      this.healthMonitor = new ZetaHealthMonitor(this.zetaClient);
       this.rebalanceEngine = this.vaultAllocator.getRebalanceEngine();
 
       this.emergencyUnwind = new EmergencyUnwind(
-        this.driftExecutor,
+        this.zetaExecutor,
         this.jupiterExecutor,
         this.vaultAllocator,
         this.alerter,
@@ -133,12 +133,12 @@ export class KeeperLoop {
         return;
       }
 
-      // 2. Check Drift health (if executor available)
+      // 2. Check Zeta health (if executor available)
       if (this.healthMonitor) {
         const shouldUnwind = await this.healthMonitor.shouldEmergencyUnwind();
         if (shouldUnwind) {
-          logger.error("Drift health critical -- emergency unwind");
-          await this.emergencyUnwind.execute("Drift health ratio critical");
+          logger.error("Zeta health critical -- emergency unwind");
+          await this.emergencyUnwind.execute("Zeta health ratio critical");
           return;
         }
       }
@@ -157,8 +157,8 @@ export class KeeperLoop {
         for (const tp of trackedPositions) {
           if (tp.shouldClose) {
             logger.warn(`${tp.asset}: ${tp.closeReason}`);
-            if (this.driftExecutor) {
-              const sig = await this.driftExecutor.closePosition(tp.asset);
+            if (this.zetaExecutor) {
+              const sig = await this.zetaExecutor.closePosition(tp.asset);
               if (sig) {
                 this.positionTracker.recordExit(tp.asset);
                 this.metrics.recordTrade({
@@ -269,13 +269,13 @@ export class KeeperLoop {
     switch (action.type) {
       case "open_long":
       case "open_short": {
-        // Execute on Drift if available
-        if (this.driftExecutor) {
-          const oraclePrice = this.driftExecutor.getOraclePrice(action.asset);
+        // Execute on Zeta if available
+        if (this.zetaExecutor) {
+          const oraclePrice = this.zetaExecutor.getOraclePrice(action.asset);
           const tvl = this.vaultAllocator ? await this.vaultAllocator.getVaultTVL() : 0;
           const sizeUsd = (tvl / 1e6) * EXECUTION_PARAMS.activeAllocationPct * action.size;
 
-          const txSig = await this.driftExecutor.openPosition({
+          const txSig = await this.zetaExecutor.openPosition({
             asset: action.asset,
             direction: direction as "long" | "short",
             sizeUsd,
@@ -300,7 +300,7 @@ export class KeeperLoop {
           asset: action.asset,
           side: direction as "long" | "short",
           size: action.size,
-          entryPrice: this.driftExecutor?.getOraclePrice(action.asset) || 0,
+          entryPrice: this.zetaExecutor?.getOraclePrice(action.asset) || 0,
           currentPrice: 0,
           unrealizedPnl: 0,
           leverage: 1,
@@ -311,8 +311,8 @@ export class KeeperLoop {
       }
 
       case "close": {
-        if (this.driftExecutor) {
-          await this.driftExecutor.closePosition(action.asset);
+        if (this.zetaExecutor) {
+          await this.zetaExecutor.closePosition(action.asset);
           this.positionTracker?.recordExit(action.asset);
           await this.signalClient.updateDelta(action.asset, 0);
         }
@@ -367,7 +367,7 @@ export class KeeperLoop {
   async shutdown(): Promise<void> {
     logger.info("Shutting down keeper...");
     this.rebalanceEngine?.stopAllLoops();
-    if (this.driftClient) await this.driftClient.unsubscribe();
+    if (this.zetaClient) await this.zetaClient.unsubscribe();
     logger.info("Keeper shutdown complete");
   }
 }

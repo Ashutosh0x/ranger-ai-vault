@@ -159,7 +159,7 @@ async def get_risk(_rate=Depends(rate_limit)):
         "breach": dd.breach or not delta.within_limit,
         "drawdown_reduction_factor": drawdown_monitor.get_reduction_factor(),
         "max_drawdown_pct": m.get("max_drawdown_pct", 0),
-        "drift_health_rate": 0.0,  # Updated by keeper via POST
+        "zeta_health_rate": 0.0,  # Updated by keeper via POST
         "timestamp": time.time(),
     }
 

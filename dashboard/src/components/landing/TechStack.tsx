@@ -7,7 +7,7 @@ import { ScaleOnHover } from "@/components/motion/ScaleOnHover";
 const PROTOCOLS = [
   { name: "Solana", role: "Blockchain" },
   { name: "Ranger / Voltr", role: "Vault Framework" },
-  { name: "Drift Protocol", role: "Perp Trading" },
+  { name: "Zeta Markets", role: "Perp Trading" },
   { name: "Kamino Finance", role: "Floor Yield" },
   { name: "Jupiter", role: "Spot Hedging" },
   { name: "Pyth Network", role: "Oracle Prices" },

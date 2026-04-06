@@ -7,7 +7,7 @@ jest.mock("../src/config", () => ({
   VAULT_CONFIG: {
     strategies: [
       { name: "kamino-lending", address: "11111111111111111111111111111111", defaultPct: 0.5 },
-      { name: "drift-perps", address: "22222222222222222222222222222222", defaultPct: 0.5 },
+      { name: "zeta-perps", address: "22222222222222222222222222222222", defaultPct: 0.5 },
     ],
     usdcMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     rewardTokenMint: null,
@@ -57,10 +57,10 @@ describe("VaultAllocator", () => {
   test("getStrategyBalances returns structured data", async () => {
     const balances = await allocator.getStrategyBalances();
     expect(balances).toHaveProperty("kamino");
-    expect(balances).toHaveProperty("drift");
+    expect(balances).toHaveProperty("zeta");
     expect(balances).toHaveProperty("idle");
     expect(typeof balances.kamino).toBe("number");
-    expect(typeof balances.drift).toBe("number");
+    expect(typeof balances.zeta).toBe("number");
     expect(typeof balances.idle).toBe("number");
   });
 

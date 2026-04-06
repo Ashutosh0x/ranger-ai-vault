@@ -24,10 +24,10 @@ export const CLUSTER = process.env.SOLANA_CLUSTER || "mainnet-beta";
 export const VAULT_ADDRESS = process.env.VAULT_ADDRESS || "";
 export const KAMINO_STRATEGY_ADDRESS =
   process.env.KAMINO_STRATEGY_ADDRESS || "";
-export const DRIFT_LEND_STRATEGY_ADDRESS =
-  process.env.DRIFT_LEND_STRATEGY_ADDRESS || "";
-export const DRIFT_PERPS_STRATEGY_ADDRESS =
-  process.env.DRIFT_PERPS_STRATEGY_ADDRESS || "";
+export const ZETA_LEND_STRATEGY_ADDRESS =
+  process.env.ZETA_LEND_STRATEGY_ADDRESS || "";
+export const ZETA_PERPS_STRATEGY_ADDRESS =
+  process.env.ZETA_PERPS_STRATEGY_ADDRESS || "";
 
 // ═══ TOKEN MINTS ═══
 export const ASSET_MINT_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"; // USDC
@@ -35,8 +35,8 @@ export const ASSET_MINT_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 // ═══ AMOUNTS (in raw token units — 6 decimals for USDC) ═══
 export const DEPOSIT_AMOUNT = 1_000_000_000;        // 1000 USDC
 export const KAMINO_ALLOCATION = 500_000_000;        // 500 USDC (50%)
-export const DRIFT_LEND_ALLOCATION = 250_000_000;    // 250 USDC (25%)
-export const DRIFT_PERPS_ALLOCATION = 250_000_000;   // 250 USDC (25%)
+export const ZETA_LEND_ALLOCATION = 250_000_000;    // 250 USDC (25%)
+export const ZETA_PERPS_ALLOCATION = 250_000_000;   // 250 USDC (25%)
 
 // ═══ FEE CONFIG ═══
 export const PERFORMANCE_FEE_BPS = 1000;  // 10%

@@ -63,12 +63,12 @@ export function DualEngine() {
                 Active Trading Alpha
               </h3>
               <p className="text-sm text-gray-400 mb-6 leading-relaxed">
-                ML signal-driven momentum + mean-reversion trades on Drift perps.
+                ML signal-driven momentum + mean-reversion trades on Zeta perps.
                 Delta-neutral hedging via Jupiter spot.
               </p>
               <div className="space-y-2">
                 {[
-                  { label: "Protocol", value: "Drift + Jupiter" },
+                  { label: "Protocol", value: "Zeta + Jupiter" },
                   { label: "Expected APY", value: "13-38% (additive)" },
                   { label: "Max Drawdown", value: "-15% hard limit" },
                   { label: "Signal Interval", value: "Every 15 min" },

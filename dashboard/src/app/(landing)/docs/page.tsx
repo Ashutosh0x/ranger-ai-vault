@@ -102,10 +102,10 @@ const DOCS: DocEntry[] = [
   {
     title: "Supported Integrations",
     description:
-      "Protocols integrated with Voltr: Drift, Marginfi, Solend, Kamino (Klend), and more. See which adaptors are available.",
+      "Protocols integrated with Voltr: Zeta, Marginfi, Solend, Kamino (Klend), and more. See which adaptors are available.",
     href: "https://docs.voltr.xyz/docs/for-vault-owners/supported-integrations",
     icon: Plug,
-    tags: ["integrations", "drift", "marginfi", "solend", "kamino", "klend"],
+    tags: ["integrations", "zeta", "marginfi", "solend", "kamino", "klend"],
     category: "Vault Owners",
     isExternal: true,
   },
@@ -132,7 +132,7 @@ const DOCS: DocEntry[] = [
   {
     title: "Strategy Setup Guide",
     description:
-      "How to add adaptors, initialize strategies (Solend, Marginfi, Klend, Drift), and configure direct withdrawal.",
+      "How to add adaptors, initialize strategies (Solend, Marginfi, Klend, Zeta), and configure direct withdrawal.",
     href: "https://docs.voltr.xyz/docs/for-vault-owners/strategy-setup-guide",
     icon: GitBranch,
     tags: ["strategy", "setup", "adaptor", "direct-withdraw"],
@@ -244,7 +244,7 @@ const DOCS: DocEntry[] = [
   {
     title: "Client Scripts (GitHub)",
     description:
-      "Collection of scripts for vault initialization, strategy setup, deposits, and withdrawals. Supports Solend, Marginfi, Klend, and Drift.",
+      "Collection of scripts for vault initialization, strategy setup, deposits, and withdrawals. Supports Solend, Marginfi, Klend, and Zeta.",
     href: "https://github.com/voltrxyz/client-scripts",
     icon: Terminal,
     tags: ["scripts", "github", "cli", "initialize", "deposit"],
@@ -360,12 +360,12 @@ const DOCS: DocEntry[] = [
 
   // ── Hackathon Resources ─────────────────────
   {
-    title: "Drift Documentation",
+    title: "Zeta Documentation",
     description:
-      "Drift protocol docs — perps, spot markets, and vault strategies. Essential for the Drift Side Track.",
-    href: "https://docs.drift.trade",
+      "Zeta protocol docs — perps, spot markets, and vault strategies. Essential for the Zeta Side Track.",
+    href: "https://docs.zeta.markets",
     icon: BookOpen,
-    tags: ["drift", "perps", "spot", "documentation", "side-track"],
+    tags: ["zeta", "perps", "spot", "documentation", "side-track"],
     category: "Hackathon",
     isExternal: true,
   },
@@ -380,12 +380,12 @@ const DOCS: DocEntry[] = [
     isExternal: true,
   },
   {
-    title: "Drift Side Track",
+    title: "Zeta Side Track",
     description:
-      "Separate submission for the Drift Side Track — up to $200K in additional vault seeding prizes.",
-    href: "https://superteam.fun/earn/listing/ranger-build-a-bear-hackathon-drift-side-track/",
+      "Separate submission for the Zeta Side Track — up to $200K in additional vault seeding prizes.",
+    href: "https://superteam.fun/earn/listing/ranger-build-a-bear-hackathon-zeta-side-track/",
     icon: Zap,
-    tags: ["drift", "side-track", "hackathon", "submission", "prizes"],
+    tags: ["zeta", "side-track", "hackathon", "submission", "prizes"],
     category: "Hackathon",
     isExternal: true,
   },

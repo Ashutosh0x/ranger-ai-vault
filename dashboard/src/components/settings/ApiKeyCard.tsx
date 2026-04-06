@@ -59,9 +59,9 @@ export const SERVICE_CONFIGS: Record<string, ServiceConfigWithIcon> = {
   },
   DRIFT: {
     service: "DRIFT",
-    label: "Drift Protocol",
+    label: "Zeta Markets",
     description: "Perpetuals and spot market data for vault strategies",
-    docsUrl: "https://docs.drift.trade",
+    docsUrl: "https://docs.zeta.markets",
     icon: Waves,
     iconColor: "text-cyan-400",
     requiresUrl: true,

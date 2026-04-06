@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # Add parent to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.data.drift_fetcher import get_drift_fetcher
+from src.data.zeta_fetcher import get_zeta_fetcher
 from src.features.feature_engineer import get_feature_engineer
 from src.features.indicators import bollinger_bands, price_momentum, rsi, vwap
 from src.models.momentum_model import MomentumModel
@@ -22,9 +22,9 @@ from src.config import ASSETS, FEATURE_COLUMNS, TRAINING_CONFIG
 
 def fetch_training_data(asset: str) -> pd.DataFrame:
     """Fetch OHLCV data for training."""
-    drift = get_drift_fetcher()
+    zeta = get_zeta_fetcher()
     print(f"[TRAIN] Fetching OHLCV for {asset}...")
-    df = drift.get_ohlcv(asset, resolution="3600", limit=4320)  # ~6 months of hourly
+    df = zeta.get_ohlcv(asset, resolution="3600", limit=4320)  # ~6 months of hourly
 
     if df.empty:
         print(f"[WARN] No OHLCV data for {asset}")

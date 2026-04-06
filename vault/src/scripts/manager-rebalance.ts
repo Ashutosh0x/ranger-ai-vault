@@ -2,7 +2,7 @@
 // Manager Script: Rebalance Between Engines
 // ═══════════════════════════════════════════════════════
 // Called by keeper when signal changes.
-// Moves funds between Engine A (Kamino) and Engine B (Drift).
+// Moves funds between Engine A (Kamino) and Engine B (Zeta).
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
@@ -18,23 +18,23 @@ import {
   MANAGER_KEYPAIR_PATH,
   VAULT_ADDRESS,
   KAMINO_STRATEGY_ADDRESS,
-  DRIFT_PERPS_STRATEGY_ADDRESS,
+  ZETA_PERPS_STRATEGY_ADDRESS,
 } from "../variables";
 
 async function main() {
-  // Parse: --kamino-pct <0-100> --drift-pct <0-100>
+  // Parse: --kamino-pct <0-100> --zeta-pct <0-100>
   const args = process.argv.slice(2);
   const kaminoPctIdx = args.indexOf("--kamino-pct");
-  const driftPctIdx = args.indexOf("--drift-pct");
+  const zetaPctIdx = args.indexOf("--zeta-pct");
 
   let kaminoPct = 50;
-  let driftPct = 50;
+  let zetaPct = 50;
 
   if (kaminoPctIdx !== -1) kaminoPct = parseInt(args[kaminoPctIdx + 1]);
-  if (driftPctIdx !== -1) driftPct = parseInt(args[driftPctIdx + 1]);
+  if (zetaPctIdx !== -1) zetaPct = parseInt(args[zetaPctIdx + 1]);
 
-  if (kaminoPct + driftPct !== 100) {
-    logError("Kamino + Drift percentages must sum to 100");
+  if (kaminoPct + zetaPct !== 100) {
+    logError("Kamino + Zeta percentages must sum to 100");
     process.exit(1);
   }
 
@@ -43,7 +43,7 @@ async function main() {
     process.exit(1);
   }
 
-  logStep(`Rebalancing: Kamino=${kaminoPct}%, Drift=${driftPct}%`);
+  logStep(`Rebalancing: Kamino=${kaminoPct}%, Zeta=${zetaPct}%`);
 
   const connection = new Connection(RPC_URL, "confirmed");
   const client = new VoltrClient(connection);
@@ -57,11 +57,11 @@ async function main() {
   logStep("Current vault state", {
     totalAssets: totalAssets / 1e6,
     targetKamino: (totalAssets * kaminoPct) / 100 / 1e6,
-    targetDrift: (totalAssets * driftPct) / 100 / 1e6,
+    targetZeta: (totalAssets * zetaPct) / 100 / 1e6,
   });
 
   const targetKamino = Math.floor((totalAssets * kaminoPct) / 100);
-  const targetDrift = Math.floor((totalAssets * driftPct) / 100);
+  const targetZeta = Math.floor((totalAssets * zetaPct) / 100);
 
   // Step 1: Withdraw everything from both strategies
   if (KAMINO_STRATEGY_ADDRESS) {
@@ -81,20 +81,20 @@ async function main() {
     }
   }
 
-  if (DRIFT_PERPS_STRATEGY_ADDRESS) {
+  if (ZETA_PERPS_STRATEGY_ADDRESS) {
     try {
-      const withdrawDriftIx = await client.createManagerWithdrawStrategyIx(
+      const withdrawZetaIx = await client.createManagerWithdrawStrategyIx(
         { amount: BigInt(totalAssets) },
         {
           vault,
-          strategy: new PublicKey(DRIFT_PERPS_STRATEGY_ADDRESS),
+          strategy: new PublicKey(ZETA_PERPS_STRATEGY_ADDRESS),
           manager: managerKp.publicKey,
         },
       );
-      await sendAndConfirmOptimisedTx(connection, [withdrawDriftIx], [managerKp]);
-      logStep("Withdrew from Drift");
+      await sendAndConfirmOptimisedTx(connection, [withdrawZetaIx], [managerKp]);
+      logStep("Withdrew from Zeta");
     } catch (err: any) {
-      logStep("Drift withdraw skipped (may be empty)");
+      logStep("Zeta withdraw skipped (may be empty)");
     }
   }
 
@@ -112,20 +112,20 @@ async function main() {
     logStep(`Deposited ${targetKamino / 1e6} USDC to Kamino`);
   }
 
-  if (DRIFT_PERPS_STRATEGY_ADDRESS && targetDrift > 0) {
-    const depositDriftIx = await client.createManagerDepositStrategyIx(
-      { amount: BigInt(targetDrift) },
+  if (ZETA_PERPS_STRATEGY_ADDRESS && targetZeta > 0) {
+    const depositZetaIx = await client.createManagerDepositStrategyIx(
+      { amount: BigInt(targetZeta) },
       {
         vault,
-        strategy: new PublicKey(DRIFT_PERPS_STRATEGY_ADDRESS),
+        strategy: new PublicKey(ZETA_PERPS_STRATEGY_ADDRESS),
         manager: managerKp.publicKey,
       },
     );
-    await sendAndConfirmOptimisedTx(connection, [depositDriftIx], [managerKp]);
-    logStep(`Deposited ${targetDrift / 1e6} USDC to Drift`);
+    await sendAndConfirmOptimisedTx(connection, [depositZetaIx], [managerKp]);
+    logStep(`Deposited ${targetZeta / 1e6} USDC to Zeta`);
   }
 
-  logSuccess(`Rebalanced: Kamino=${kaminoPct}% (${targetKamino / 1e6} USDC), Drift=${driftPct}% (${targetDrift / 1e6} USDC)`);
+  logSuccess(`Rebalanced: Kamino=${kaminoPct}% (${targetKamino / 1e6} USDC), Zeta=${zetaPct}% (${targetZeta / 1e6} USDC)`);
 }
 
 main().catch((err) => {

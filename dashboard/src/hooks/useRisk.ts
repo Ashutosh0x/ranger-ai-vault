@@ -10,7 +10,7 @@ export interface RiskData {
   breach: boolean;
   drawdown_reduction_factor: number;
   max_drawdown_pct: number;
-  drift_health_rate: number;
+  zeta_health_rate: number;
   timestamp: number;
 }
 

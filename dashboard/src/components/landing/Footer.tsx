@@ -34,8 +34,8 @@ const LINKS = {
       external: true,
     },
     {
-      label: "Drift Protocol",
-      href: "https://drift.trade",
+      label: "Zeta Markets",
+      href: "https://zeta.markets",
       external: true,
     },
     {
@@ -72,7 +72,7 @@ export function Footer() {
                 AI-Powered Momentum with Mean-Reversion Hybrid Yield Vault on
                 Solana.
               </p>
-              {VAULT && VAULT !== "FILL_AFTER_DEPLOY" && (
+              {VAULT && VAULT !== "VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT" && (
                 <a
                   href={`https://solscan.io/account/${VAULT}${cluster}`}
                   target="_blank"

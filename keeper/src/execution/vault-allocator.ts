@@ -34,31 +34,31 @@ export class VaultAllocator {
    * Adjust allocation based on signal strength.
    *
    * Signal range: -1.0 to +1.0
-   * - Strong signal (|signal| > 0.6): shift more to Drift for active trading
+   * - Strong signal (|signal| > 0.6): shift more to Zeta for active trading
    * - Weak/no signal: keep more in Kamino for floor yield
    *
    * Allocation ranges:
    * - Kamino: 40% (strong signal) to 80% (no signal)
-   * - Drift:  20% (no signal) to 60% (strong signal)
+   * - Zeta:  20% (no signal) to 60% (strong signal)
    */
   async allocateFromSignal(signalStrength: number): Promise<void> {
     const absSignal = Math.abs(signalStrength);
 
     // Linear interpolation based on signal strength
     const kaminoPct = 0.80 - absSignal * 0.40;
-    const driftPct = 1.0 - kaminoPct;
+    const zetaPct = 1.0 - kaminoPct;
 
     // Clamp to safe bounds
     const safeKamino = Math.max(0.40, Math.min(0.80, kaminoPct));
-    const safeDrift = 1.0 - safeKamino;
+    const safeZeta = 1.0 - safeKamino;
 
     logger.info(
       `Signal strength: ${signalStrength.toFixed(3)} -> ` +
         `Kamino: ${(safeKamino * 100).toFixed(1)}%, ` +
-        `Drift: ${(safeDrift * 100).toFixed(1)}%`,
+        `Zeta: ${(safeZeta * 100).toFixed(1)}%`,
     );
 
-    await this.rebalanceEngine.rebalanceFromSignal(safeKamino, safeDrift);
+    await this.rebalanceEngine.rebalanceFromSignal(safeKamino, safeZeta);
   }
 
   // === EMERGENCY ===
@@ -76,17 +76,17 @@ export class VaultAllocator {
 
   async getStrategyBalances(): Promise<{
     kamino: number;
-    drift: number;
+    zeta: number;
     idle: number;
   }> {
-    const [kamino, drift, idle] = await Promise.all([
+    const [kamino, zeta, idle] = await Promise.all([
       this.rebalanceEngine.getStrategyBalance("kamino-lending"),
-      this.rebalanceEngine.getStrategyBalance("drift-perps"),
+      this.rebalanceEngine.getStrategyBalance("zeta-perps"),
       this.rebalanceEngine.getVaultIdleUSDC(),
     ]);
     return {
       kamino: kamino / 1e6,
-      drift: drift / 1e6,
+      zeta: zeta / 1e6,
       idle: idle / 1e6,
     };
   }

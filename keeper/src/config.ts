@@ -48,13 +48,13 @@ export const VAULT_CONFIG = {
       defaultPct: 0.5,
     },
     {
-      name: "drift-lend",
-      address: process.env.DRIFT_LEND_STRATEGY_ADDRESS || "",
+      name: "zeta-lend",
+      address: process.env.ZETA_LEND_STRATEGY_ADDRESS || "",
       defaultPct: 0.25,
     },
     {
-      name: "drift-perps",
-      address: process.env.DRIFT_PERPS_STRATEGY_ADDRESS || "",
+      name: "zeta-perps",
+      address: process.env.ZETA_PERPS_STRATEGY_ADDRESS || "",
       defaultPct: 0.25,
     },
   ],

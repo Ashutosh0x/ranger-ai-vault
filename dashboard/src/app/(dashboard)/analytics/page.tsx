@@ -54,7 +54,7 @@ export default function AnalyticsPage() {
           <div className="space-y-3">
             {[
               { label: "Kamino Lending", value: "Base yield layer", badge: "Active" },
-              { label: "Drift Perps", value: "Momentum + Mean-rev", badge: "Active" },
+              { label: "Zeta Perps", value: "Momentum + Mean-rev", badge: "Active" },
               { label: "Jupiter DCA", value: "Spot rebalancing", badge: "Standby" },
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between py-2 border-b border-vault-border/30">

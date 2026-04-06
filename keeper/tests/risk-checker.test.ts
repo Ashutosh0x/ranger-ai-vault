@@ -1,16 +1,16 @@
 // keeper/tests/risk-checker.test.ts
 
-import { DriftHealthMonitor, DriftHealthState } from "../src/risk/drift-health-monitor";
-import { DriftClient } from "@drift-labs/sdk";
+import { ZetaHealthMonitor, ZetaHealthState } from "../src/risk/zeta-health-monitor";
+import { ZetaClient } from "@zetamarkets/sdk";
 import { Connection } from "@solana/web3.js";
 
-describe("DriftHealthMonitor", () => {
-  let monitor: DriftHealthMonitor;
+describe("ZetaHealthMonitor", () => {
+  let monitor: ZetaHealthMonitor;
 
   beforeEach(() => {
     const mockConnection = {} as Connection;
-    const driftClient = new DriftClient(mockConnection);
-    monitor = new DriftHealthMonitor(driftClient);
+    const zetaClient = new ZetaClient(mockConnection);
+    monitor = new ZetaHealthMonitor(zetaClient);
   });
 
   test("getHealthState returns valid state", async () => {
@@ -40,7 +40,7 @@ describe("DriftHealthMonitor", () => {
   });
 
   test("getReductionFactor returns 0 for safe state", () => {
-    const safeState: DriftHealthState = {
+    const safeState: ZetaHealthState = {
       healthRatio: 50, totalCollateral: 10000, maintenanceMarginReq: 2000,
       unrealizedPnl: 500, leverage: 1.5, freeCollateral: 5000,
       isAtRisk: false, riskLevel: "safe",
@@ -49,7 +49,7 @@ describe("DriftHealthMonitor", () => {
   });
 
   test("getReductionFactor returns 1.0 for critical state", () => {
-    const criticalState: DriftHealthState = {
+    const criticalState: ZetaHealthState = {
       healthRatio: 5, totalCollateral: 2000, maintenanceMarginReq: 1900,
       unrealizedPnl: -500, leverage: 4.0, freeCollateral: 100,
       isAtRisk: true, riskLevel: "critical",
@@ -58,7 +58,7 @@ describe("DriftHealthMonitor", () => {
   });
 
   test("getReductionFactor scales linearly in warning zone", () => {
-    const warningState: DriftHealthState = {
+    const warningState: ZetaHealthState = {
       healthRatio: 15, totalCollateral: 5000, maintenanceMarginReq: 3000,
       unrealizedPnl: -200, leverage: 1.8, freeCollateral: 1000,
       isAtRisk: true, riskLevel: "warning",
@@ -69,7 +69,7 @@ describe("DriftHealthMonitor", () => {
   });
 
   test("getReductionFactor triggers for over-leverage", () => {
-    const overLeveraged: DriftHealthState = {
+    const overLeveraged: ZetaHealthState = {
       healthRatio: 60, totalCollateral: 10000, maintenanceMarginReq: 2000,
       unrealizedPnl: 500, leverage: 3.0, freeCollateral: 5000,
       isAtRisk: true, riskLevel: "safe",

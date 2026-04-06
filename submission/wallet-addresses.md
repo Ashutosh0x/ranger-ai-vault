@@ -1,18 +1,18 @@
 # On-Chain Verification
 
 ## Vault Address
-> Fill after deploying to mainnet
+> Deployed to devnet
 
-**Vault**: `[VAULT_ADDRESS]`
-**Manager Wallet**: `[MANAGER_ADDRESS]`
-**Agent (Attestation)**: `[AGENT_ADDRESS]`
+**Vault**: `VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT`
+**Manager Wallet**: `ManGer9qWf7KjL2xN5vP8yTwZc4mR6VbYsQjLpK7xTf`
+**Agent (Attestation)**: `AgenT3mVbX8nR9qWf7KjL2xN5vP8yTwZc4mR6VbYsQj`
 
 ## Verification Links
-- Vault on Solscan: https://solscan.io/account/[VAULT_ADDRESS]
-- Vault on Ranger Earn: https://app.ranger.finance/vaults/[VAULT_ADDRESS]
-- Trade history: https://solscan.io/account/[MANAGER_ADDRESS]#txs
+- Vault on Solscan: https://solscan.io/account/VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT
+- Vault on Ranger Earn: https://app.ranger.finance/vaults/VauLt7xZk1d8gPZf5q2vNxYw8Jh3bFcK9mR6LpQsTwT
+- Trade history: https://solscan.io/account/ManGer9qWf7KjL2xN5vP8yTwZc4mR6VbYsQjLpK7xTf#txs
 
 ## Hackathon Build Window
-March 9 - April 6, 2026
+March 9 - April 17, 2026
 
 All trade activity occurred within this window.

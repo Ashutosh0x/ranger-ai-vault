@@ -69,7 +69,7 @@ export function Hero() {
                       mx-auto mb-8 leading-relaxed"
         >
           Momentum + Mean-Reversion hybrid strategy with a provable yield floor.
-          Kamino lending for safety, Drift perps for alpha, Ed25519 attestation
+          Kamino lending for safety, Zeta perps for alpha, Ed25519 attestation
           for trust.
         </motion.p>
 

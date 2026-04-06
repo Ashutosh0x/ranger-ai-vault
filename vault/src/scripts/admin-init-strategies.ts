@@ -3,8 +3,8 @@
 // ═══════════════════════════════════════════════════════
 // Initializes 3 strategies in the vault:
 // 1. Kamino Lending (USDC floor yield)
-// 2. Drift Lend (fallback yield)
-// 3. Drift Perps (active trading engine)
+// 2. Zeta Lend (fallback yield)
+// 3. Zeta Perps (active trading engine)
 
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { VoltrClient } from "@voltr/vault-sdk";
@@ -17,13 +17,13 @@ import {
 } from "../helper";
 import { RPC_URL, ADMIN_KEYPAIR_PATH, VAULT_ADDRESS } from "../variables";
 import {
-  DRIFT_ADAPTOR_PROGRAM_ID,
+  ZETA_ADAPTOR_PROGRAM_ID,
   KAMINO_ADAPTOR_PROGRAM_ID,
   KAMINO_LENDING_PROGRAM_ID,
   KAMINO_MAIN_MARKET,
   KAMINO_USDC_RESERVE,
-  DRIFT_PROGRAM_ID,
-  DRIFT_STATE,
+  ZETA_PROGRAM_ID,
+  ZETA_STATE,
   USDC_MINT,
 } from "../constants";
 
@@ -59,20 +59,20 @@ async function main() {
       ],
     },
     {
-      name: "Drift Lend (fallback yield)",
-      adaptorProgram: DRIFT_ADAPTOR_PROGRAM_ID,
+      name: "Zeta Lend (fallback yield)",
+      adaptorProgram: ZETA_ADAPTOR_PROGRAM_ID,
       remainingAccounts: [
-        { pubkey: DRIFT_PROGRAM_ID, isSigner: false, isWritable: false },
-        { pubkey: DRIFT_STATE, isSigner: false, isWritable: true },
+        { pubkey: ZETA_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: ZETA_STATE, isSigner: false, isWritable: true },
         { pubkey: USDC_MINT, isSigner: false, isWritable: false },
       ],
     },
     {
-      name: "Drift Perps (active trading engine)",
-      adaptorProgram: DRIFT_ADAPTOR_PROGRAM_ID,
+      name: "Zeta Perps (active trading engine)",
+      adaptorProgram: ZETA_ADAPTOR_PROGRAM_ID,
       remainingAccounts: [
-        { pubkey: DRIFT_PROGRAM_ID, isSigner: false, isWritable: false },
-        { pubkey: DRIFT_STATE, isSigner: false, isWritable: true },
+        { pubkey: ZETA_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: ZETA_STATE, isSigner: false, isWritable: true },
         { pubkey: USDC_MINT, isSigner: false, isWritable: false },
       ],
     },
@@ -115,8 +115,8 @@ async function main() {
   console.log("\n══════════════════════════════════════════");
   console.log("📋 STRATEGY ADDRESSES (update .env):");
   console.log(`   KAMINO_STRATEGY_ADDRESS=${strategyAddresses[0]}`);
-  console.log(`   DRIFT_LEND_STRATEGY_ADDRESS=${strategyAddresses[1]}`);
-  console.log(`   DRIFT_PERPS_STRATEGY_ADDRESS=${strategyAddresses[2]}`);
+  console.log(`   ZETA_LEND_STRATEGY_ADDRESS=${strategyAddresses[1]}`);
+  console.log(`   ZETA_PERPS_STRATEGY_ADDRESS=${strategyAddresses[2]}`);
   console.log("══════════════════════════════════════════");
 }
 

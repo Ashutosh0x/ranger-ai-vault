@@ -2,7 +2,7 @@
   "momentum": {
     "version": "v1",
     "filename": "momentum_v1.joblib",
-    "trained_at": "2026-04-03T19:12:20.494738",
+    "trained_at": "2026-04-06T09:22:01.834770",
     "metrics": {
       "rmse": 0.008249535442198514,
       "correlation": 0.7650454207540294,
@@ -14,7 +14,7 @@
   "meanrev": {
     "version": "v1",
     "filename": "meanrev_v1.joblib",
-    "trained_at": "2026-04-03T19:12:20.510294",
+    "trained_at": "2026-04-06T09:22:01.848531",
     "metrics": {
       "rmse": 0.008084455097808278,
       "correlation": 0.7291965004556605,

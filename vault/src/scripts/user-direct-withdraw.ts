@@ -17,8 +17,8 @@ import {
   USER_KEYPAIR_PATH,
   VAULT_ADDRESS,
   KAMINO_STRATEGY_ADDRESS,
-  DRIFT_LEND_STRATEGY_ADDRESS,
-  DRIFT_PERPS_STRATEGY_ADDRESS,
+  ZETA_LEND_STRATEGY_ADDRESS,
+  ZETA_PERPS_STRATEGY_ADDRESS,
 } from "../variables";
 
 async function main() {
@@ -32,7 +32,7 @@ async function main() {
   const sharesIdx = args.indexOf("--shares");
 
   if (stratIdx === -1 || sharesIdx === -1) {
-    console.log("Usage: ts-node user-direct-withdraw.ts --strategy <kamino|drift-lend|drift-perps> --shares <amount>");
+    console.log("Usage: ts-node user-direct-withdraw.ts --strategy <kamino|zeta-lend|zeta-perps> --shares <amount>");
     process.exit(1);
   }
 
@@ -41,8 +41,8 @@ async function main() {
 
   const strategyMap: Record<string, string> = {
     "kamino": KAMINO_STRATEGY_ADDRESS,
-    "drift-lend": DRIFT_LEND_STRATEGY_ADDRESS,
-    "drift-perps": DRIFT_PERPS_STRATEGY_ADDRESS,
+    "zeta-lend": ZETA_LEND_STRATEGY_ADDRESS,
+    "zeta-perps": ZETA_PERPS_STRATEGY_ADDRESS,
   };
 
   const strategyAddress = strategyMap[strategyName];

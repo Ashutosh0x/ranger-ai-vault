@@ -12,8 +12,8 @@ load_dotenv()
 ASSETS = ["SOL-PERP", "BTC-PERP", "ETH-PERP"]
 
 # ═══ API ENDPOINTS ═══
-DRIFT_API_BASE = "https://data.api.drift.trade"
-DRIFT_MAINNET_API = "https://mainnet-beta.api.drift.trade"
+ZETA_API_BASE = "https://data.api.zeta.trade"
+ZETA_MAINNET_API = "https://mainnet-beta.api.zeta.trade"
 COINGLASS_API_BASE = "https://open-api.coinglass.com/public/v2"
 COINGLASS_V3_API_BASE = "https://open-api-v3.coinglass.com/api"
 PYTH_API_BASE = "https://hermes.pyth.network"
@@ -54,7 +54,7 @@ MODEL_PARAMS = {
 
 # ═══ FEATURE COLUMNS ═══
 FEATURE_COLUMNS = [
-    # Drift-derived
+    # Zeta-derived
     "funding_rate_1h",
     "funding_rate_8h_ma",
     "oi_change_1h",
@@ -119,7 +119,7 @@ PYTH_FEED_IDS = {
 }
 
 # ═══ DRIFT MARKET MAPPING ═══
-DRIFT_MARKET_MAP = {
+ZETA_MARKET_MAP = {
     "SOL-PERP": {"market_index": 0, "symbol": "SOL"},
     "BTC-PERP": {"market_index": 1, "symbol": "BTC"},
     "ETH-PERP": {"market_index": 2, "symbol": "ETH"},

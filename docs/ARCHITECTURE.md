@@ -47,7 +47,7 @@ graph TB
 
     subgraph OffChain["☁️ Off-Chain Services"]
         subgraph SignalEngine["🐍 Signal Engine (Python)"]
-            DataLayer["Data Layer<br/>Coinglass | Drift API<br/>Pyth | Helius"]
+            DataLayer["Data Layer<br/>Coinglass | Zeta API<br/>Pyth | Helius"]
             FeatureEng["Feature Engineer<br/>17 features"]
             MLModels["XGBoost Ensemble<br/>Momentum (40%)<br/>Mean-Rev (60%)"]
             RiskCalc["Risk Calculator<br/>VaR | Kelly | DD"]
@@ -57,7 +57,7 @@ graph TB
         subgraph KeeperBot["🤖 Keeper Bot (TypeScript)"]
             KeeperLoop["Main Loop<br/>(every 15 min)"]
             RebalanceEng["Rebalance Engine<br/>3 loops"]
-            Execution["Execution Layer<br/>Drift | Jupiter | Vault"]
+            Execution["Execution Layer<br/>Zeta | Jupiter | Vault"]
             Attestation["Ed25519<br/>Attestation"]
             RiskCheck["Risk Checker<br/>6 layers"]
             Monitoring["Monitoring<br/>Logger | Metrics | Alerts"]
@@ -68,12 +68,12 @@ graph TB
         subgraph Vault["🏦 Ranger Vault (Voltr)"]
             VaultProgram["Vault Program<br/>USDC base asset<br/>LP token mint"]
             Strategy1["Strategy 1<br/>Kamino Lending<br/>(Floor Yield)"]
-            Strategy2["Strategy 2<br/>Drift Lend<br/>(Fallback)"]
-            Strategy3["Strategy 3<br/>Drift Perps<br/>(Active Trading)"]
+            Strategy2["Strategy 2<br/>Zeta Lend<br/>(Fallback)"]
+            Strategy3["Strategy 3<br/>Zeta Perps<br/>(Active Trading)"]
         end
 
         subgraph Protocols["📋 DeFi Protocols"]
-            Drift["Drift Protocol<br/>SOL-PERP | BTC-PERP<br/>ETH-PERP"]
+            Zeta["Zeta Markets<br/>SOL-PERP | BTC-PERP<br/>ETH-PERP"]
             Kamino["Kamino Finance<br/>USDC Lending<br/>Farm Rewards"]
             Jupiter["Jupiter<br/>Spot Swaps<br/>Reward Swaps"]
         end
@@ -85,7 +85,7 @@ graph TB
 
     subgraph ExternalAPIs["🌐 External APIs"]
         Coinglass["Coinglass<br/>Liquidation Heatmap<br/>OI | Funding"]
-        DriftAPI["Drift Data API<br/>Historical Funding<br/>OHLCV"]
+        ZetaAPI["Zeta Data API<br/>Historical Funding<br/>OHLCV"]
         HeliusAPI["Helius RPC<br/>Transaction Data<br/>Account Updates"]
     end
 
@@ -106,7 +106,7 @@ graph TB
     RiskCalc -->|"risk state"| FastAPI
 
     Coinglass -->|"liq heatmap"| DataLayer
-    DriftAPI -->|"funding rates"| DataLayer
+    ZetaAPI -->|"funding rates"| DataLayer
     HeliusAPI -->|"tx data"| DataLayer
     Pyth -->|"prices"| DataLayer
 
@@ -123,9 +123,9 @@ graph TB
     VaultProgram -->|"CPI"| Strategy2
     VaultProgram -->|"CPI"| Strategy3
     Strategy1 -->|"Kamino Adaptor"| Kamino
-    Strategy2 -->|"Drift Adaptor"| Drift
-    Strategy3 -->|"Drift Adaptor"| Drift
-    Execution -->|"Drift SDK"| Drift
+    Strategy2 -->|"Zeta Adaptor"| Zeta
+    Strategy3 -->|"Zeta Adaptor"| Zeta
+    Execution -->|"Zeta SDK"| Zeta
     Execution -->|"Jupiter API"| Jupiter
     Execution -->|"Voltr SDK"| VaultProgram
 
@@ -136,9 +136,9 @@ graph TB
     classDef dashboard fill:#f99,stroke:#333,stroke-width:2px
 
     class Depositor,Manager,Admin,Judge userNode
-    class VaultProgram,Strategy1,Strategy2,Strategy3,Drift,Kamino,Jupiter,Pyth onchain
+    class VaultProgram,Strategy1,Strategy2,Strategy3,Zeta,Kamino,Jupiter,Pyth onchain
     class SignalEngine,KeeperBot,KeeperLoop,RebalanceEng,Execution,Attestation,RiskCheck,Monitoring,DataLayer,FeatureEng,MLModels,RiskCalc,FastAPI offchain
-    class Coinglass,DriftAPI,HeliusAPI external
+    class Coinglass,ZetaAPI,HeliusAPI external
     class UI,API dashboard
 ```
 
@@ -164,34 +164,34 @@ graph TB
         end
 
         subgraph Adaptors["Adaptor Layer"]
-            DriftAdaptor["Drift Adaptor<br/>EBN93eXs5fHG..."]
+            ZetaAdaptor["Zeta Adaptor<br/>EBN93eXs5fHG..."]
             KaminoAdaptor["Kamino Adaptor"]
         end
 
         subgraph Strategies["Three Strategies"]
             S1["Strategy 1: Kamino USDC Lending<br/>Target: 50% | Floor Yield<br/>Expected: 4-12% APY"]
-            S2["Strategy 2: Drift USDC Lending<br/>Target: 0% (fallback)<br/>Expected: 3-8% APY"]
-            S3["Strategy 3: Drift Perps Trading<br/>Target: 50% | Active Engine<br/>Expected: 15-40% APY"]
+            S2["Strategy 2: Zeta USDC Lending<br/>Target: 0% (fallback)<br/>Expected: 3-8% APY"]
+            S3["Strategy 3: Zeta Perps Trading<br/>Target: 50% | Active Engine<br/>Expected: 15-40% APY"]
         end
     end
 
     subgraph OnChainProtocols["On-Chain Protocols"]
         KaminoProtocol["Kamino Finance<br/>USDC Lending Market"]
-        DriftProtocol["Drift Protocol<br/>SOL-PERP (0) | BTC-PERP (1) | ETH-PERP (2)"]
+        ZetaProtocol["Zeta Markets<br/>SOL-PERP (0) | BTC-PERP (1) | ETH-PERP (2)"]
     end
 
     AdminRole -->|"createInitializeVaultIx"| VaultAccount
-    AdminRole -->|"createAddAdaptorIx"| DriftAdaptor
+    AdminRole -->|"createAddAdaptorIx"| ZetaAdaptor
     AdminRole -->|"createAddAdaptorIx"| KaminoAdaptor
     ManagerRole -->|"deposit/withdraw"| Strategies
     UserRole -->|"deposit USDC"| TokenAccount
     TokenAccount -->|"mint LP"| LPMint
 
     S1 -->|"CPI via Kamino Adaptor"| KaminoAdaptor
-    S2 -->|"CPI via Drift Adaptor"| DriftAdaptor
-    S3 -->|"CPI via Drift Adaptor"| DriftAdaptor
+    S2 -->|"CPI via Zeta Adaptor"| ZetaAdaptor
+    S3 -->|"CPI via Zeta Adaptor"| ZetaAdaptor
     KaminoAdaptor --> KaminoProtocol
-    DriftAdaptor --> DriftProtocol
+    ZetaAdaptor --> ZetaProtocol
 
     VaultAccount -.->|"receipt refresh (5 min)"| S1
     VaultAccount -.->|"receipt refresh"| S2
@@ -207,7 +207,7 @@ graph TB
     class ManagerRole manager
     class UserRole user
     class S1,S2,S3 strategy
-    class DriftAdaptor,KaminoAdaptor adaptor
+    class ZetaAdaptor,KaminoAdaptor adaptor
 ```
 
 ---
@@ -220,14 +220,14 @@ The complete ML pipeline from raw data ingestion to signal output.
 graph LR
     subgraph DataSources["📡 Data Sources"]
         CG["Coinglass API<br/>GET /liqHeatmap<br/>Rate: 30/min"]
-        DA["Drift Data API<br/>GET /fundingRates<br/>GET /candles"]
+        DA["Zeta Data API<br/>GET /fundingRates<br/>GET /candles"]
         PY["Pyth Network<br/>SOL/USD | BTC/USD<br/>ETH/USD"]
         HE["Helius RPC<br/>getTransaction<br/>getAccountInfo"]
     end
 
     subgraph Fetchers["🔄 Data Fetchers"]
         CF["coinglass_fetcher.py<br/>Rate limiting + Retry"]
-        DF["drift_fetcher.py<br/>Funding + OI + OHLCV"]
+        DF["zeta_fetcher.py<br/>Funding + OI + OHLCV"]
         PF["pyth_fetcher.py<br/>Real-time prices"]
         HF["helius_fetcher.py<br/>Enhanced TX data"]
     end
@@ -310,7 +310,7 @@ graph TB
     end
 
     subgraph Execution["⚡ Execution"]
-        DE["drift-executor.ts<br/>open/close/getPosition/getOraclePrice"]
+        DE["zeta-executor.ts<br/>open/close/getPosition/getOraclePrice"]
         VA["vault-allocator.ts<br/>allocateFromSignal/emergencyFullUnwind"]
         JE["jupiter-executor.ts<br/>buySpot/sellSpot (Jupiter V6)"]
         EU["emergency-unwind.ts<br/>Close all → Sell spot → Kamino → Alert"]
@@ -324,7 +324,7 @@ graph TB
     subgraph Risk["🛡️ Risk Management"]
         RC["risk-checker.ts<br/>DD < 3% | Leverage < 2x | Delta < 0.10"]
         PT["position-tracker.ts<br/>SL: -0.5% | TP: +1.5%"]
-        DH["drift-health-monitor.ts<br/>Health 0-100 | Risk level enum"]
+        DH["zeta-health-monitor.ts<br/>Health 0-100 | Risk level enum"]
     end
 
     subgraph Monitor["📊 Monitoring"]
@@ -374,14 +374,14 @@ End-to-end data flow showing how information moves through the entire system eve
 sequenceDiagram
     autonumber
     participant CG as Coinglass API
-    participant DA as Drift API
+    participant DA as Zeta API
     participant PY as Pyth Oracle
     participant SE as Signal Engine
     participant KB as Keeper Bot
     participant RC as Risk Checker
-    participant DH as Drift Health
+    participant DH as Zeta Health
     participant AT as Attestation
-    participant DR as Drift Protocol
+    participant DR as Zeta Markets
     participant KM as Kamino Finance
     participant VT as Ranger Vault
     participant TG as Telegram
@@ -413,7 +413,7 @@ sequenceDiagram
         Note over KB,DH: Phase 3: Risk Validation
         KB->>RC: checkAllLimits()
         RC->>DH: getHealthState()
-        DH->>DR: driftUser.getHealth()
+        DH->>DR: zetaUser.getHealth()
         DR-->>DH: health=58, leverage=1.42x
         DH-->>RC: {safe, health=58}
         RC-->>KB: ✅ ALL LIMITS PASS
@@ -491,7 +491,7 @@ graph TB
     end
 
     subgraph Layer4["Layer 4: PROTOCOL"]
-        L4A["Drift Health: 0-100<br/>Warning: 20 | Critical: 10"]
+        L4A["Zeta Health: 0-100<br/>Warning: 20 | Critical: 10"]
         L4B["Max Leverage: 2.0x"]
         L4C["Oracle Guard<br/>Divergence < 1%"]
     end
@@ -553,13 +553,13 @@ sequenceDiagram
     participant AK as Agent Keypair (Ed25519)
     participant TX as Transaction Builder
     participant ED as Ed25519 Program (On-Chain)
-    participant DR as Drift Program (On-Chain)
+    participant DR as Zeta Program (On-Chain)
     participant VL as Validators
 
     KP->>ML: GET /signal → {signal: 0.72, asset: SOL}
     ML-->>KP: Signal received
 
-    KP->>KP: Build trade instruction: Drift.placePerpOrder(SOL, LONG, $12.5k)
+    KP->>KP: Build trade instruction: Zeta.placePerpOrder(SOL, LONG, $12.5k)
 
     rect rgb(226, 213, 241)
         Note over KP,AK: Attestation Phase
@@ -577,7 +577,7 @@ sequenceDiagram
         TX->>TX: ix[0] ComputeBudgetProgram.setComputeUnitLimit(400k)
         TX->>TX: ix[1] ComputeBudgetProgram.setComputeUnitPrice(50k)
         TX->>TX: ix[2] Ed25519 VERIFY instruction (ATTESTATION)
-        TX->>TX: ix[3] Drift.placePerpOrder (ACTUAL TRADE)
+        TX->>TX: ix[3] Zeta.placePerpOrder (ACTUAL TRADE)
         TX->>TX: Sign with manager keypair
     end
 
@@ -587,7 +587,7 @@ sequenceDiagram
         VL->>ED: Verify Ed25519 signature
         alt Signature Valid
             ED-->>VL: ✅ Verification passed
-            VL->>DR: Execute Drift order
+            VL->>DR: Execute Zeta order
             DR-->>VL: Order placed ✅
             VL-->>TX: txSig: "abc123..."
         else Signature Invalid
@@ -645,10 +645,10 @@ graph TB
     end
 
     subgraph Allocation["📊 Dynamic Allocation"]
-        A1["No signal (0.0): 80% Kamino / 20% Drift"]
-        A2["Weak (0.3): 68% Kamino / 32% Drift"]
-        A3["Strong (0.6+): 52% Kamino / 48% Drift"]
-        A4["Max (1.0): 40% Kamino / 60% Drift"]
+        A1["No signal (0.0): 80% Kamino / 20% Zeta"]
+        A2["Weak (0.3): 68% Kamino / 32% Zeta"]
+        A3["Strong (0.6+): 52% Kamino / 48% Zeta"]
+        A4["Max (1.0): 40% Kamino / 60% Zeta"]
     end
 
     classDef refresh fill:#d4edda,stroke:#155724
@@ -684,7 +684,7 @@ flowchart TD
         SignalBTC --> RiskCheck
         SignalETH --> RiskCheck
         RiskCheck --> DD{"Daily DD < 3%?"}
-        DD -->|"✅"| Health{"Drift Health > 15?"}
+        DD -->|"✅"| Health{"Zeta Health > 15?"}
         DD -->|"❌"| Emergency["🚨 EMERGENCY UNWIND"]
         Health -->|"✅"| Delta{"Net Delta < 0.10?"}
         Health -->|"❌"| Emergency
@@ -750,7 +750,7 @@ graph TB
         subgraph APIRoutes["API Routes"]
             A1["/api/vault-state → Voltr SDK"]
             A2["/api/signal → Signal proxy"]
-            A3["/api/positions → Drift SDK"]
+            A3["/api/positions → Zeta SDK"]
             A4["/api/health → System check"]
         end
     end
@@ -814,7 +814,7 @@ graph TB
     subgraph Solana["⛓️ Solana"]
         Helius["Helius RPC"]
         VaultProg["Ranger Vault"]
-        DriftProg["Drift Protocol"]
+        ZetaProg["Zeta Markets"]
     end
 
     User -->|"HTTPS :3000"| DB
@@ -824,7 +824,7 @@ graph TB
     KB -->|"HTTPS"| TGBot
     KB -->|"RPC"| Helius
     Helius --> VaultProg
-    Helius --> DriftProg
+    Helius --> ZetaProg
     ENV -.-> Docker
     Keys -.-> KB
 
@@ -833,7 +833,7 @@ graph TB
     classDef secure fill:#fd79a8,stroke:#e84393
 
     class SE,KB,DB container
-    class Helius,VaultProg,DriftProg solana
+    class Helius,VaultProg,ZetaProg solana
     class Keys,ENV secure
 ```
 
@@ -853,7 +853,7 @@ graph LR
 
     subgraph APIs["External APIs"]
         CG["Coinglass (~288/day)"]
-        DAPI["Drift Data API (~288/day)"]
+        DAPI["Zeta Data API (~288/day)"]
         JUP["Jupiter API (~50/day)"]
         TG["Telegram API (~10/day)"]
     end
@@ -865,7 +865,7 @@ graph LR
 
     subgraph Programs["On-Chain Programs"]
         Voltr["Voltr Vault"]
-        DriftP["Drift"]
+        ZetaP["Zeta"]
         KaminoP["Kamino"]
         Ed25519P["Ed25519 SigVerify"]
     end
@@ -880,7 +880,7 @@ graph LR
     DB --> Read
 
     Write --> Voltr
-    Write --> DriftP
+    Write --> ZetaP
     Write --> KaminoP
     Write --> Ed25519P
 
@@ -890,7 +890,7 @@ graph LR
 
     class SE,KB,DB our
     class CG,DAPI,JUP,TG api
-    class Voltr,DriftP,KaminoP,Ed25519P program
+    class Voltr,ZetaP,KaminoP,Ed25519P program
 ```
 
 ---
@@ -984,17 +984,17 @@ graph TD
 
     subgraph SharedDeps["Shared Dependencies"]
         VoltrSDK["@voltr/vault-sdk"]
-        DriftSDK["@drift-labs/sdk"]
+        ZetaSDK["@zetamarkets/sdk"]
         SolanaWeb3["@solana/web3.js"]
     end
 
     V --> VoltrSDK
     V --> SolanaWeb3
-    K --> DriftSDK
+    K --> ZetaSDK
     K --> VoltrSDK
     K --> SolanaWeb3
     D --> VoltrSDK
-    D --> DriftSDK
+    D --> ZetaSDK
 
     K -->|"HTTP :8080 (auth)"| SE
     D -->|"HTTP :8080 (proxy)"| SE
@@ -1005,7 +1005,7 @@ graph TD
     classDef shared fill:#55efc4,stroke:#00b894
 
     class V,SE,K,D pkg
-    class VoltrSDK,DriftSDK,SolanaWeb3 shared
+    class VoltrSDK,ZetaSDK,SolanaWeb3 shared
 ```
 
 ---
@@ -1020,7 +1020,7 @@ graph TB
         VS["Vault Account PDA"]
         SS1["Strategy Accounts (3)"]
         LP["LP Token Mint"]
-        DriftUser["Drift User Account"]
+        ZetaUser["Zeta User Account"]
     end
 
     subgraph FileStorage["💾 File Storage"]
@@ -1040,7 +1040,7 @@ graph TB
     classDef file fill:#74b9ff,stroke:#0984e3
     classDef memory fill:#ffeaa7,stroke:#fdcb6e
 
-    class VS,SS1,LP,DriftUser chain
+    class VS,SS1,LP,ZetaUser chain
     class Models,DataCache,LogFiles,Results file
     class KeeperState,MetricsState,SignalState memory
 ```
@@ -1057,7 +1057,7 @@ graph TB
         F1["Signal Server Down"]
         F2["Coinglass API Down"]
         F3["RPC Congestion"]
-        F4["Drift Health Critical"]
+        F4["Zeta Health Critical"]
         F5["Drawdown Breach"]
         F6["Keeper Crash"]
     end
@@ -1114,7 +1114,7 @@ sequenceDiagram
     participant Vault as 🏦 Vault Program
     participant LP as 🪙 LP Mint
     participant Kamino as 🏗️ Kamino
-    participant Drift as ⚡ Drift
+    participant Zeta as ⚡ Zeta
 
     User->>Dashboard: Navigate to /vault
     Dashboard->>User: Show deposit form
@@ -1132,9 +1132,9 @@ sequenceDiagram
     end
 
     rect rgb(204, 229, 255)
-        Note over Vault,Drift: Keeper Allocates (next tick)
+        Note over Vault,Zeta: Keeper Allocates (next tick)
         Vault->>Kamino: managerDeposit(500 USDC)
-        Vault->>Drift: managerDeposit(500 USDC)
+        Vault->>Zeta: managerDeposit(500 USDC)
     end
 
     Dashboard->>User: ✅ Deposited 1000 USDC
@@ -1148,7 +1148,7 @@ sequenceDiagram
     participant DH as 🛡️ Health Monitor
     participant RC as ⚖️ Risk Checker
     participant EU as 🚨 Emergency Unwind
-    participant DE as ⚡ Drift Executor
+    participant DE as ⚡ Zeta Executor
     participant JE as 🔄 Jupiter
     participant VA as 🏦 Vault Allocator
     participant AL as 📱 Telegram
@@ -1187,7 +1187,7 @@ sequenceDiagram
     participant SC as 📡 Signal Client
     participant SE as 🐍 Signal Engine
     participant RC as ⚖️ Risk Checker
-    participant DE as ⚡ Drift Executor
+    participant DE as ⚡ Zeta Executor
     participant AT as 🔐 Attestation
     participant VA as 🏦 Allocator
     participant MT as 📈 Metrics
@@ -1221,7 +1221,7 @@ sequenceDiagram
 
     rect rgb(204, 229, 255)
         KL->>VA: allocateFromSignal(0.72)
-        VA-->>KL: Kamino 52%, Drift 48%
+        VA-->>KL: Kamino 52%, Zeta 48%
     end
 
     KL->>MT: recordTrade()
@@ -1234,13 +1234,13 @@ sequenceDiagram
 
 | Item | Address |
 |------|---------|
-| Drift Adaptor | `EBN93eXs5fHGBABuajQqdsKRkCgaqtJa8vEFD6vKXiP` |
+| Zeta Adaptor | `EBN93eXs5fHGBABuajQqdsKRkCgaqtJa8vEFD6vKXiP` |
 | USDC Mint | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` |
 | Wrapped SOL | `So11111111111111111111111111111111111111112` |
 | Ed25519 Program | `Ed25519SigVerify111111111111111111111111111` |
 | Vault Address | `[DEPLOY_OUTPUT]` |
 
-| Market | Drift Index |
+| Market | Zeta Index |
 |--------|------------|
 | SOL-PERP | 0 |
 | BTC-PERP | 1 |
@@ -1248,7 +1248,7 @@ sequenceDiagram
 
 | API | Endpoint |
 |-----|----------|
-| Drift Data | `data.api.drift.trade` |
+| Zeta Data | `data.api.zeta.markets` |
 | Coinglass | `open-api.coinglass.com` |
 | Jupiter | `quote-api.jup.ag/v6` |
 | Helius | `mainnet.helius-rpc.com` |

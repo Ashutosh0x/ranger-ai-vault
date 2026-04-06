@@ -17,8 +17,8 @@ import {
   MANAGER_KEYPAIR_PATH,
   VAULT_ADDRESS,
   KAMINO_STRATEGY_ADDRESS,
-  DRIFT_LEND_STRATEGY_ADDRESS,
-  DRIFT_PERPS_STRATEGY_ADDRESS,
+  ZETA_LEND_STRATEGY_ADDRESS,
+  ZETA_PERPS_STRATEGY_ADDRESS,
 } from "../variables";
 
 async function main() {
@@ -33,7 +33,7 @@ async function main() {
   const amountIdx = args.indexOf("--amount");
 
   if (strategyNameIdx === -1 || amountIdx === -1) {
-    console.log("Usage: ts-node manager-withdraw-strategies.ts --strategy <kamino|drift-lend|drift-perps> --amount <usdc>");
+    console.log("Usage: ts-node manager-withdraw-strategies.ts --strategy <kamino|zeta-lend|zeta-perps> --amount <usdc>");
     process.exit(1);
   }
 
@@ -43,13 +43,13 @@ async function main() {
 
   const strategyMap: Record<string, string> = {
     "kamino": KAMINO_STRATEGY_ADDRESS,
-    "drift-lend": DRIFT_LEND_STRATEGY_ADDRESS,
-    "drift-perps": DRIFT_PERPS_STRATEGY_ADDRESS,
+    "zeta-lend": ZETA_LEND_STRATEGY_ADDRESS,
+    "zeta-perps": ZETA_PERPS_STRATEGY_ADDRESS,
   };
 
   const strategyAddress = strategyMap[strategyName];
   if (!strategyAddress) {
-    logError(`Unknown strategy: ${strategyName}. Use kamino, drift-lend, or drift-perps.`);
+    logError(`Unknown strategy: ${strategyName}. Use kamino, zeta-lend, or zeta-perps.`);
     process.exit(1);
   }
 

@@ -22,17 +22,17 @@ sequenceDiagram
     participant K as Keeper Bot
     participant A as Agent Keypair (Ed25519)
     participant S as Solana Validators
-    participant D as Drift Protocol
+    participant D as Zeta Markets
 
     SE->>K: Signal response (asset, direction, confidence)
-    K->>K: Build Drift trade instruction
+    K->>K: Build Zeta trade instruction
     K->>A: Sign instruction data with agent private key
     A-->>K: Ed25519 signature
     K->>K: Build transaction with attestation
     Note over K: IX[0]: ComputeBudget (limit)
     Note over K: IX[1]: ComputeBudget (price)
     Note over K: IX[2]: Ed25519SigVerify (attestation)
-    Note over K: IX[3]: Drift placePerpOrder (trade)
+    Note over K: IX[3]: Zeta placePerpOrder (trade)
     K->>S: Submit transaction
     S->>S: Verify Ed25519 signature on-chain
     alt Signature Valid
@@ -61,7 +61,7 @@ const ed25519Ix = Ed25519Program.createInstructionWithPrivateKey({
 const tx = new Transaction()
   .add(computeBudgetIx)     // Compute budget
   .add(ed25519Ix)           // Ed25519 attestation
-  .add(tradeInstruction);   // Actual Drift trade
+  .add(tradeInstruction);   // Actual Zeta trade
 ```
 
 #### 2. `attestation-verifier.ts` — Verification
@@ -96,7 +96,7 @@ The verifier can independently confirm that any historical trade TX contains a v
 ```
 ~73%  Receipt refresh (no attestation — routine maintenance)
 ~24%  Rebalance / allocation (no attestation — manager-only)
-~1%   Drift perp orders (ATTESTED — AI-authorized trades)
+~1%   Zeta perp orders (ATTESTED — AI-authorized trades)
 ~0.5% Jupiter swaps (ATTESTED — hedging operations)
 ~0.3% Kamino claims (no attestation — reward compounding)
 ~0.1% Admin config (no attestation — one-time setup)

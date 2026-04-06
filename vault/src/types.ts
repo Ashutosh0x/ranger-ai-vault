@@ -26,7 +26,7 @@ export interface StrategyConfig {
   address: string;
   adaptorProgramId: string;
   defaultAllocationPct: number;
-  type: "kamino-lending" | "drift-lend" | "drift-perps";
+  type: "kamino-lending" | "zeta-lend" | "zeta-perps";
 }
 
 export interface StrategyState {
@@ -84,8 +84,8 @@ export interface TradeInstruction {
 // ═══ VAULT ALLOCATION ═══
 export interface VaultAllocation {
   kaminoLending: bigint;
-  driftLend: bigint;
-  driftPerps: bigint;
+  zetaLend: bigint;
+  zetaPerps: bigint;
   idle: bigint;
   total: bigint;
 }

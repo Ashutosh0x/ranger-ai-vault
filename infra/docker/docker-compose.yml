@@ -12,7 +12,7 @@ services:
     environment:
       - KEEPER_SECRET=${KEEPER_SECRET}
       - COINGLASS_API_KEY=${COINGLASS_API_KEY}
-      - DRIFT_ENV=mainnet-beta
+      - ZETA_ENV=mainnet-beta
     volumes:
       - ../../signal-engine/models/saved:/app/models/saved:ro
       - ../../signal-engine/data/cache:/app/data/cache

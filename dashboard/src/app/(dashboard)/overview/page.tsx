@@ -102,8 +102,8 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold mb-4">Strategy Allocation</h2>
           <div className="space-y-4">
             <AllocationBar label="Kamino Lending (Floor)" pct={50} color="#06D6A0" />
-            <AllocationBar label="Drift Lend" pct={25} color="#0CA5EA" />
-            <AllocationBar label="Drift Perps (Active)" pct={25} color="#FFD166" />
+            <AllocationBar label="Zeta Lend" pct={25} color="#0CA5EA" />
+            <AllocationBar label="Zeta Perps (Active)" pct={25} color="#FFD166" />
           </div>
         </div>
 

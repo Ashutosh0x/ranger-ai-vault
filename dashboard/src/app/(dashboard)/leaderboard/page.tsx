@@ -5,7 +5,7 @@ import { Trophy, TrendingUp, Shield, BarChart3 } from "lucide-react";
 const MOCK_VAULTS = [
   { rank: 1, name: "Ranger AI Vault", apy: "—", sharpe: "—", tvl: "—", status: "Live" },
   { rank: 2, name: "Elemental rgUSD", apy: "11.25%", sharpe: "1.8", tvl: "$22M", status: "Live" },
-  { rank: 3, name: "Drift Yield", apy: "8.4%", sharpe: "1.2", tvl: "$5.1M", status: "Live" },
+  { rank: 3, name: "Zeta Yield", apy: "8.4%", sharpe: "1.2", tvl: "$5.1M", status: "Live" },
   { rank: 4, name: "Kamino Multiply", apy: "6.9%", sharpe: "0.9", tvl: "$18M", status: "Live" },
   { rank: 5, name: "JLP Vault", apy: "12.1%", sharpe: "0.7", tvl: "$340M", status: "Live" },
 ];

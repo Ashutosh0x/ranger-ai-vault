@@ -55,7 +55,7 @@ export interface KeeperState {
 
 export interface VaultAllocation {
   kaminoLending: number;
-  driftPerps: number;
+  zetaPerps: number;
   idle: number;
   total: number;
 }
