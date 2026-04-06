@@ -1,3 +1,5 @@
+import { AgentOrchestrator } from "../execution/agent-orchestrator";
+import { FlashExecutor } from "../execution/flash-executor";
 // =================================================================
 // Keeper Loop -- Main execution loop with full module integration
 // =================================================================
@@ -41,6 +43,10 @@ export class KeeperLoop {
   private positionTracker!: PositionTracker;
   private healthMonitor!: ZetaHealthMonitor;
   private rebalanceEngine!: RebalanceEngine;
+
+  private agentOrchestrator!: AgentOrchestrator;
+  private flashExecutor!: FlashExecutor;
+
 
   private connection!: Connection;
   private zetaClient!: ZetaClient;
@@ -91,6 +97,14 @@ export class KeeperLoop {
       this.positionTracker = new PositionTracker(this.zetaExecutor);
       this.healthMonitor = new ZetaHealthMonitor(this.zetaClient);
       this.rebalanceEngine = this.vaultAllocator.getRebalanceEngine();
+
+      this.agentOrchestrator = new AgentOrchestrator(
+        managerKp.secretKey.toString(),
+        VAULT_CONFIG.rpcUrl,
+        process.env.OPENAI_API_KEY || "dummy"
+      );
+      this.flashExecutor = new FlashExecutor(this.connection, managerKp);
+
 
       this.emergencyUnwind = new EmergencyUnwind(
         this.zetaExecutor,

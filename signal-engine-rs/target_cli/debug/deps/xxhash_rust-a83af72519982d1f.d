@@ -1,0 +1,10 @@
+C:\Users\ashut\OneDrive\Documents\ranger\ranger-ai-vault\signal-engine-rs\target_cli\debug\deps\xxhash_rust-a83af72519982d1f.d: C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\lib.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\utils.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh32_common.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh64_common.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh3_common.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh3.rs
+
+C:\Users\ashut\OneDrive\Documents\ranger\ranger-ai-vault\signal-engine-rs\target_cli\debug\deps\libxxhash_rust-a83af72519982d1f.rmeta: C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\lib.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\utils.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh32_common.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh64_common.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh3_common.rs C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh3.rs
+
+C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\lib.rs:
+C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\utils.rs:
+C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh32_common.rs:
+C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh64_common.rs:
+C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh3_common.rs:
+C:\Users\ashut\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xxhash-rust-0.8.15\src\xxh3.rs:

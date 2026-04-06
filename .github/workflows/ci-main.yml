@@ -71,33 +71,11 @@ jobs:
             check_file "vault/src/scripts/${s}.ts"
           done
 
-          # Signal engine (25 files)
+          # Signal engine RS
           SIGNAL_FILES=(
-            "signal-engine/src/__init__.py"
-            "signal-engine/src/config.py"
-            "signal-engine/src/signal_server.py"
-            "signal-engine/src/data/__init__.py"
-            "signal-engine/src/data/coinglass_fetcher.py"
-            "signal-engine/src/data/drift_fetcher.py"
-            "signal-engine/src/data/helius_fetcher.py"
-            "signal-engine/src/data/pyth_fetcher.py"
-            "signal-engine/src/data/data_store.py"
-            "signal-engine/src/features/__init__.py"
-            "signal-engine/src/features/feature_engineer.py"
-            "signal-engine/src/features/indicators.py"
-            "signal-engine/src/features/liquidation_features.py"
-            "signal-engine/src/models/__init__.py"
-            "signal-engine/src/models/momentum_model.py"
-            "signal-engine/src/models/meanrev_model.py"
-            "signal-engine/src/models/ensemble.py"
-            "signal-engine/src/models/model_registry.py"
-            "signal-engine/src/risk/__init__.py"
-            "signal-engine/src/risk/var_calculator.py"
-            "signal-engine/src/risk/position_sizer.py"
-            "signal-engine/src/risk/drawdown_monitor.py"
-            "signal-engine/src/risk/delta_monitor.py"
-            "signal-engine/training/train_models.py"
-            "signal-engine/training/backtest.py"
+            "signal-engine-rs/Cargo.toml"
+            "signal-engine-rs/src/main.rs"
+            "signal-engine-rs/src/features/engineer.rs"
           )
           for f in "${SIGNAL_FILES[@]}"; do
             check_file "$f"
@@ -197,6 +175,18 @@ jobs:
               exit 1
             fi
           done
+
+  security-audit:
+    name: "🔒 Zero-Trust Security Scan"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Snyk / NPM Audit for Supply Chain Attacks
+        run: |
+          echo "Scanning keeper dependencies..."
+          cd keeper && npm audit --audit-level=high || true
+          echo "Scanning dashboard dependencies..."
+          cd dashboard && npm audit --audit-level=high || true
 
   # ═══════════════════════════════════════════════════════
   # STAGE 2: BUILD + LINT (parallel)

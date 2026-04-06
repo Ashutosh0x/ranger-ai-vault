@@ -1,0 +1,28 @@
+[package]
+name = "signal-engine-rs"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance ML inference and Data Engineering backend for Ranger AI Vault"
+
+[dependencies]
+# Async Web Framework
+tokio = { version = "1.0", features = ["full"] }
+axum = "0.6"
+
+# Dataframes (Pandas replacement)
+polars = { version = "0.33", features = ["lazy", "json", "csv"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Networking
+reqwest = { version = "0.11", features = ["json"] }
+
+# ML / MLBindings
+# xgboost = "0.1" // Removed: C-bindings are breaking on Windows due to linux-specific 'cp' build.rs
+# Recommend using pure-rust `forust_ml` or standard API calls for ML endpoints.
+
+# Utilities
+tracing = "0.1"
+tracing-subscriber = "0.3"

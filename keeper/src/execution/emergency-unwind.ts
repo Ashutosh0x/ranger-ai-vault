@@ -81,4 +81,14 @@ export class EmergencyUnwind {
   isInProgress(): boolean {
     return this.isUnwinding;
   }
+
+  // Phase 2: Autonomous Webhook Monitoring
+  async handleHeliusWebhook(payload: any): Promise<void> {
+    logger.info("Analyzing Helius stream for extreme L1 anomalies...");
+    // E.g., detection of a $100M+ flashloan or massive Zeta liquidity drain
+    if (payload.type === "PROGRAM_EXPLOIT_DETECTED") {
+      logger.error("Helius Webhook detected critical protocol anomaly!");
+      await this.execute("Helius anomaly detection trigger");
+    }
+  }
 }

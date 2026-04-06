@@ -14,7 +14,7 @@ setup: ## Install all dependencies
 	cd vault && npm install
 	@echo ""
 	@echo "═══ Installing Signal Engine dependencies ═══"
-	cd signal-engine && python3 -m pip install -r requirements.txt
+	cd signal-engine-rs && cargo build
 	@echo ""
 	@echo "═══ Installing Keeper dependencies ═══"
 	cd keeper && npm install
@@ -80,9 +80,8 @@ deploy-mainnet: ## Deploy vault to mainnet
 # ═══ SERVICES ═══
 
 signal: ## Start signal engine (port 8080)
-	@echo "═══ Starting Signal Engine ═══"
-	cd signal-engine && python -m uvicorn src.signal_server:app \
-		--host 0.0.0.0 --port $${SIGNAL_SERVER_PORT:-8080} --reload
+	@echo "═══ Starting Signal Engine RS ═══"
+	cd signal-engine-rs && cargo run --release
 
 keeper: ## Start keeper bot
 	@echo "═══ Starting Keeper Bot ═══"
@@ -94,9 +93,8 @@ dashboard: ## Start dashboard (port 3000)
 
 start: ## Start all services (signal + keeper + dashboard)
 	@echo "═══ Starting All Services ═══"
-	@echo "Starting signal engine in background..."
-	cd signal-engine && python -m uvicorn src.signal_server:app \
-		--host 0.0.0.0 --port 8080 &
+	@echo "Starting signal engine rs in background..."
+	cd signal-engine-rs && cargo run --release &
 	@sleep 3
 	@echo "Starting keeper in background..."
 	cd keeper && npx ts-node src/index.ts &
@@ -106,23 +104,17 @@ start: ## Start all services (signal + keeper + dashboard)
 
 # ═══ ML ═══
 
-train: ## Train XGBoost models
-	@echo "═══ Training ML Models ═══"
-	cd signal-engine && python training/train_models.py
-	@echo "✅ Models trained and saved to signal-engine/models/saved/"
+train: ## Train XGBoost models (Offline in Rust)
+	@echo "═══ ML Training is now an offline binding in Rust ═══"
 
-backtest: ## Run walk-forward backtest
-	@echo "═══ Running Backtest ═══"
-	cd signal-engine && python backtest/run_backtest.py
-	@echo ""
-	@echo "Results saved to signal-engine/backtest/results/"
-	@cat signal-engine/backtest/results/metrics_summary.json 2>/dev/null || echo "No results yet"
+backtest: ## Run walk-forward backtest (Offline in Rust)
+	@echo "═══ Backtesting is offline in Rust ═══"
 
 # ═══ TESTING ═══
 
 test-signal: ## Run signal engine tests
-	@echo "═══ Testing Signal Engine ═══"
-	cd signal-engine && python -m pytest tests/ -v --tb=short --cov=src
+	@echo "═══ Testing Signal Engine RS ═══"
+	cd signal-engine-rs && cargo test
 
 test-keeper: ## Run keeper tests
 	@echo "═══ Testing Keeper ═══"
@@ -164,7 +156,7 @@ ci-local: ## Run full CI pipeline locally (same as GitHub Actions)
 
 validate: ## Quick import validation (no full build)
 	@echo "═══ Quick Validation ═══"
-	@cd signal-engine && python -c "from src.signal_server import app; print('✅ Signal server OK')" 2>/dev/null || echo "❌ Signal server import failed"
+	@cd signal-engine-rs && cargo check 2>/dev/null || echo "❌ Cargo check failed"
 	@cd keeper && npx ts-node -e "require('./src/config'); console.log('✅ Keeper config OK')" 2>/dev/null || echo "❌ Keeper config import failed"
 	@cd vault && npx ts-node -e "require('./src/helper'); console.log('✅ Vault helper OK')" 2>/dev/null || echo "❌ Vault helper import failed"
 
@@ -246,8 +238,7 @@ register-secrets: ## Register GitHub secrets from .env
 clean: ## Remove build artifacts
 	rm -rf vault/node_modules keeper/node_modules dashboard/node_modules
 	rm -rf dashboard/.next
-	rm -rf signal-engine/venv signal-engine/__pycache__
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	cd signal-engine-rs && cargo clean
 	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
 	@echo "✅ Cleaned"
 

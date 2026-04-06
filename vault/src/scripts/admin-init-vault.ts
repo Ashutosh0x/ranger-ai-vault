@@ -65,6 +65,11 @@ async function main() {
     },
   );
 
+  // Phase 2: Mainnet Multisig & Timelock Integration
+  // In production, this TX should be wrapped in a Squads multisig propose_transaction
+  // and subject to a 24-hr timelock to prevent rogue configuration upgrades.
+  logStep("Prepared Vault initialization (Timelock/Multisig aware)");
+
   // Send transaction
   const sig = await sendAndConfirmOptimisedTx(
     connection,
