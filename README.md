@@ -1191,10 +1191,10 @@ MIT License -- see [LICENSE](./LICENSE)
 
 <div align="center">
 
-**Built for the Ranger Build-A-Bear Hackathon**
+**Built for the Ranger Build-A-Bear Hackathon — Main Track**
 
-[Hackathon Page](https://earn.superteam.fun/) · [Ranger Telegram](https://t.me/rangerfinance) · [Ranger Docs](https://docs.ranger.finance/)
+[Superteam Earn Listing](https://superteam.fun/earn/listing/ranger-build-a-bear-hackathon-main-track/) · [Ranger Telegram](https://t.me/rangerfinance) · [Ranger Docs](https://docs.ranger.finance/)
 
-**Submissions Deadline: April 6, 2026 -- 23:59 UTC**
+**Submissions Deadline: April 17, 2026 — 15:59 UTC**
 
 </div>
