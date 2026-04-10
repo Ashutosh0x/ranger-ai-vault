@@ -19,10 +19,4 @@ jobs:
   security-audit:
     name: "Full Security Audit (includes Scorecard L8)"
     uses: ./.github/workflows/security-audit.yml
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-      pull-requests: write
-      id-token: write
     secrets: inherit

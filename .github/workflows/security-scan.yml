@@ -18,9 +18,4 @@ jobs:
   security-audit:
     name: "Full Security Audit"
     uses: ./.github/workflows/security-audit.yml
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-      pull-requests: write
     secrets: inherit
