@@ -62,7 +62,7 @@ jobs:
           done
 
           # Vault constants
-          for f in vault/src/constants/drift.ts vault/src/constants/kamino.ts vault/src/constants/tokens.ts vault/src/constants/ranger.ts; do
+          for f in vault/src/constants/zeta.ts vault/src/constants/kamino.ts vault/src/constants/tokens.ts vault/src/constants/ranger.ts; do
             check_file "$f"
           done
 
@@ -104,7 +104,7 @@ jobs:
             "keeper/src/attestation/attestation-verifier.ts"
             "keeper/src/risk/risk-checker.ts"
             "keeper/src/risk/position-tracker.ts"
-            "keeper/src/risk/drift-health-monitor.ts"
+            "keeper/src/risk/zeta-health-monitor.ts"
             "keeper/src/monitoring/logger.ts"
             "keeper/src/monitoring/metrics.ts"
             "keeper/src/monitoring/alerter.ts"
@@ -124,9 +124,10 @@ jobs:
             check_file "$f"
           done
 
-          # Check for dashboard pages in either app/ or src/app/
+          # Check for dashboard pages in app/, src/app/, or route groups
           for page in page.tsx layout.tsx globals.css; do
-            if [ -f "dashboard/app/$page" ] || [ -f "dashboard/src/app/$page" ]; then
+            if [ -f "dashboard/app/$page" ] || [ -f "dashboard/src/app/$page" ] || \
+               find dashboard/src/app -path "*/$page" -name "$page" 2>/dev/null | grep -q .; then
               echo "[PASS] dashboard/$page"
             else
               echo "[FAIL] MISSING: dashboard/$page"

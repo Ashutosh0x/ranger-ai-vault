@@ -45,7 +45,7 @@ jobs:
           require('./src/attestation/attestation-verifier'); console.log('[PASS] attestation-verifier');
           require('./src/risk/risk-checker'); console.log('[PASS] risk-checker');
           require('./src/risk/position-tracker'); console.log('[PASS] position-tracker');
-          require('./src/risk/drift-health-monitor'); console.log('[PASS] drift-health-monitor');
+          require('./src/risk/zeta-health-monitor'); console.log('[PASS] zeta-health-monitor');
           require('./src/monitoring/logger'); console.log('[PASS] logger');
           require('./src/monitoring/metrics'); console.log('[PASS] metrics');
           require('./src/monitoring/alerter'); console.log('[PASS] alerter');
@@ -61,7 +61,7 @@ jobs:
           echo "=== Testing vault script compilation ==="
           npx ts-node -e "
           require('./src/helper'); console.log('[PASS] helper.ts');
-          require('./src/constants/drift'); console.log('[PASS] constants/drift');
+          require('./src/constants/zeta'); console.log('[PASS] constants/zeta');
           require('./src/constants/kamino'); console.log('[PASS] constants/kamino');
           require('./src/constants/tokens'); console.log('[PASS] constants/tokens');
           require('./src/variables'); console.log('[PASS] variables.ts');

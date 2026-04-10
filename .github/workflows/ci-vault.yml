@@ -83,10 +83,10 @@ jobs:
         run: |
           echo "=== Checking constants ==="
 
-          if grep -q "EBN93eXs5fHGBABuajQqdsKRkCgaqtJa8vEFD6vKXiP" src/constants/drift.ts; then
-            echo "[PASS] Drift adaptor address present"
+          if grep -q "EBN93eXs5fHGBABuajQqdsKRkCgaqtJa8vEFD6vKXiP" src/constants/zeta.ts; then
+            echo "[PASS] Zeta adaptor address present"
           else
-            echo "[WARN] Drift adaptor address not found in constants/drift.ts"
+            echo "[WARN] Zeta adaptor address not found in constants/zeta.ts"
           fi
 
           if grep -q "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" src/constants/tokens.ts; then

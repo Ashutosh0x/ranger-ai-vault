@@ -171,8 +171,8 @@ jobs:
           const { PositionTracker } = require('./src/risk/position-tracker');
           console.log('[PASS] position-tracker');
 
-          const { DriftHealthMonitor } = require('./src/risk/drift-health-monitor');
-          console.log('[PASS] drift-health-monitor');
+          const { ZetaHealthMonitor } = require('./src/risk/zeta-health-monitor');
+          console.log('[PASS] zeta-health-monitor');
 
           // Monitoring
           const { logger } = require('./src/monitoring/logger');
