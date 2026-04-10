@@ -10,29 +10,42 @@ jobs:
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    # Skip deployment if Vercel secrets are not configured
-    if: ${{ secrets.VERCEL_TOKEN != '' }}
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
+      - name: Check Vercel secrets
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::VERCEL_TOKEN not configured — skipping deployment"
+            echo "SKIP_DEPLOY=true" >> $GITHUB_ENV
+          fi
+
       - uses: actions/checkout@v4
+        if: env.SKIP_DEPLOY != 'true'
 
       - uses: actions/setup-node@v4
+        if: env.SKIP_DEPLOY != 'true'
         with:
           node-version: '22'
 
       - name: Install Vercel CLI
+        if: env.SKIP_DEPLOY != 'true'
         run: npm install -g vercel
 
       - name: Pull Vercel env
+        if: env.SKIP_DEPLOY != 'true'
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: dashboard
 
       - name: Build project
+        if: env.SKIP_DEPLOY != 'true'
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: dashboard
 
       - name: Deploy to Vercel
+        if: env.SKIP_DEPLOY != 'true'
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: dashboard
