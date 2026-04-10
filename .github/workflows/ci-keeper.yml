@@ -24,10 +24,10 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: keeper/package.json
+          cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: TypeScript compile (strict check)
         run: |
@@ -81,10 +81,10 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: keeper/package.json
+          cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run Jest tests
         env:
@@ -119,10 +119,10 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: keeper/package.json
+          cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Validate full import chain (16 modules)
         env:
@@ -203,10 +203,10 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: keeper/package.json
+          cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Keeper dry run (validate startup sequence)
         env:
