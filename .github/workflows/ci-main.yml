@@ -19,9 +19,10 @@ permissions:
   security-events: write
   actions: read
   pull-requests: write
+  id-token: write
 
 env:
-  NODE_VERSION: "18"
+  NODE_VERSION: "22"
   PYTHON_VERSION: "3.10"
   SOLANA_VERSION: "1.18.17"
 
@@ -182,10 +183,9 @@ jobs:
             fi
           done
 
-  security-audit:
-    name: "Security Audit Pipeline"
-    uses: ./.github/workflows/security-audit.yml
-    secrets: inherit
+  # security-audit runs as a standalone workflow on push/PR.
+  # Removed from here to avoid permission-cascading issues with id-token.
+  # See: .github/workflows/security-audit.yml
 
   # ==========================================================
   # STAGE 2: BUILD + LINT (parallel)

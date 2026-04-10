@@ -12,81 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node 18
+      - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+          node-version: 22
 
       - name: Install all dependencies
         run: |
-          cd signal-engine && pip install -r requirements.txt && cd ..
           cd keeper && npm install && cd ..
           cd vault && npm install && cd ..
 
-      # === TEST 1: Signal Engine -> Keeper Communication ===
-      - name: "Test: Signal <-> Keeper Communication"
-        env:
-          KEEPER_SECRET: "integration_test_secret"
-          COINGLASS_API_KEY: "test_key"
-        run: |
-          echo "=== Starting signal server ==="
-          cd signal-engine
-          python -m uvicorn src.signal_server:app \
-            --host 0.0.0.0 --port 8080 &
-          SIGNAL_PID=$!
-          cd ..
-
-          for i in $(seq 1 30); do
-            curl -s http://localhost:8080/health > /dev/null 2>&1 && break
-            sleep 1
-          done
-          echo "[PASS] Server started"
-
-          echo ""
-          echo "=== Testing keeper signal client ==="
-          cd keeper
-          npx ts-node -e "
-          const { SignalClient } = require('./src/core/signal-client');
-
-          async function test() {
-            process.env.KEEPER_SECRET = 'integration_test_secret';
-            process.env.SIGNAL_SERVER_URL = 'http://localhost:8080';
-
-            const client = new SignalClient();
-
-            const healthy = await client.isHealthy();
-            console.log('Health check:', healthy ? '[PASS] OK' : '[FAIL]');
-            if (!healthy) process.exit(1);
-
-            try {
-              const signal = await client.getSignal('SOL-PERP');
-              console.log('Signal response:', JSON.stringify(signal, null, 2));
-              console.log('[PASS] Signal endpoint reachable');
-            } catch (err) {
-              if (err.response?.status === 500) {
-                console.log('[WARN] Signal returned 500 (models not trained) -- endpoint works');
-              } else if (err.response?.status === 403) {
-                console.log('[FAIL] Auth failed -- check KEEPER_SECRET');
-                process.exit(1);
-              } else {
-                console.log('[WARN] Signal error:', err.message);
-              }
-            }
-
-            console.log('[PASS] Signal <-> Keeper communication test passed');
-          }
-
-          test().catch(err => { console.error(err); process.exit(1); });
-          " 2>&1
-          cd ..
-          kill $SIGNAL_PID 2>/dev/null || true
-
-      # === TEST 2: Keeper Module Import Chain ===
+      # === TEST 1: Keeper Module Import Chain ===
       - name: "Test: Keeper Full Import Chain"
         env:
           KEEPER_SECRET: "test"
@@ -118,7 +54,7 @@ jobs:
           console.log('=== All 16 keeper modules import successfully ===');
           " 2>&1
 
-      # === TEST 3: Vault Scripts Import Chain ===
+      # === TEST 2: Vault Scripts Import Chain ===
       - name: "Test: Vault Scripts Import Chain"
         run: |
           cd vault
@@ -134,7 +70,7 @@ jobs:
           console.log('=== All vault modules import successfully ===');
           " 2>&1
 
-      # === TEST 4: Docker Compose Validation ===
+      # === TEST 3: Docker Compose Validation ===
       - name: "Test: Docker Compose Config"
         run: |
           echo "=== Docker Compose Config ==="

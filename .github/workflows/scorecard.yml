@@ -14,6 +14,13 @@ on:
   schedule:
     - cron: '0 6 * * 1'
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  pull-requests: write
+  id-token: write
+
 jobs:
   # Delegate to the comprehensive security audit pipeline
   security-audit:
