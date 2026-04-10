@@ -5,13 +5,17 @@ on:
     branches: [main, devnet]
     tags: ['v*']
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-push:
     name: Build & Push - ${{ matrix.service }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [signal-engine, keeper, dashboard]
+        service: [signal-engine-rs, keeper, dashboard]
     steps:
       - uses: actions/checkout@v4
 

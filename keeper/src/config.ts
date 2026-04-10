@@ -43,12 +43,12 @@ export const RISK_PARAMS = {
   maxDailyDrawdown: parseFloat(process.env.MAX_DAILY_DRAWDOWN || "0.03"),
   maxMonthlyDrawdown: parseFloat(process.env.MAX_MONTHLY_DRAWDOWN || "0.08"),
   maxLeverage: parseFloat(process.env.MAX_LEVERAGE || "2.0"),
-  maxNetDelta: 0.1,
-  stopLossPerTrade: -0.005,
-  takeProfitPerTrade: 0.015,
-  maxConcurrentPositions: 3,
-  kellyFraction: 0.25,
-  minHealthRate: 1.5,
+  maxNetDelta: parseFloat(process.env.MAX_NET_DELTA || "0.1"),
+  stopLossPerTrade: parseFloat(process.env.STOP_LOSS_PER_TRADE || "-0.005"),
+  takeProfitPerTrade: parseFloat(process.env.TAKE_PROFIT_PER_TRADE || "0.015"),
+  maxConcurrentPositions: parseInt(process.env.MAX_CONCURRENT_POSITIONS || "3", 10),
+  kellyFraction: parseFloat(process.env.KELLY_FRACTION || "0.25"),
+  minHealthRate: parseFloat(process.env.MIN_HEALTH_RATE || "1.5"),
 };
 
 export const EXECUTION_PARAMS = {

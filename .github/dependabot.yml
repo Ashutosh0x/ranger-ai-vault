@@ -21,7 +21,7 @@ updates:
       day: "monday"
     open-pull-requests-limit: 10
     reviewers:
-      - "ashut"
+      - "Ashutosh0x"
     labels:
       - "dependencies"
       - "keeper"
@@ -53,7 +53,7 @@ updates:
       day: "monday"
     open-pull-requests-limit: 10
     reviewers:
-      - "ashut"
+      - "Ashutosh0x"
     labels:
       - "dependencies"
       - "vault"
@@ -82,7 +82,7 @@ updates:
       day: "monday"
     open-pull-requests-limit: 10
     reviewers:
-      - "ashut"
+      - "Ashutosh0x"
     labels:
       - "dependencies"
       - "dashboard"
@@ -102,7 +102,7 @@ updates:
       day: "monday"
     open-pull-requests-limit: 5
     reviewers:
-      - "ashut"
+      - "Ashutosh0x"
     labels:
       - "dependencies"
       - "signal-engine"
@@ -122,7 +122,7 @@ updates:
       day: "monday"
     open-pull-requests-limit: 5
     reviewers:
-      - "ashut"
+      - "Ashutosh0x"
     labels:
       - "dependencies"
       - "ci"

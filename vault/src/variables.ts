@@ -50,10 +50,10 @@ export const ZETA_PERPS_STRATEGY_ADDRESS =
 export const ASSET_MINT_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"; // USDC
 
 // ═══ AMOUNTS (in raw token units — 6 decimals for USDC) ═══
-export const DEPOSIT_AMOUNT = 1_000_000_000;        // 1000 USDC
-export const KAMINO_ALLOCATION = 500_000_000;        // 500 USDC (50%)
-export const ZETA_LEND_ALLOCATION = 250_000_000;    // 250 USDC (25%)
-export const ZETA_PERPS_ALLOCATION = 250_000_000;   // 250 USDC (25%)
+export const DEPOSIT_AMOUNT = parseInt(process.env.DEPOSIT_AMOUNT || "1000000000", 10);        // 1000 USDC
+export const KAMINO_ALLOCATION = parseInt(process.env.KAMINO_ALLOCATION || "500000000", 10);    // 500 USDC (50%)
+export const ZETA_LEND_ALLOCATION = parseInt(process.env.ZETA_LEND_ALLOCATION || "250000000", 10);  // 250 USDC (25%)
+export const ZETA_PERPS_ALLOCATION = parseInt(process.env.ZETA_PERPS_ALLOCATION || "250000000", 10); // 250 USDC (25%)
 
 // ═══ FEE CONFIG ═══
 // I7: Driven by environment variables, consistent with keeper/src/config.ts

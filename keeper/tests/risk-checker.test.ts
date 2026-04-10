@@ -1,16 +1,17 @@
 // keeper/tests/risk-checker.test.ts
 
 import { ZetaHealthMonitor, ZetaHealthState } from "../src/risk/zeta-health-monitor";
-import { ZetaClient } from "@zetamarkets/sdk";
-import { Connection } from "@solana/web3.js";
+// NOTE: @zetamarkets/sdk API changed — use require() to avoid TS2305 on named exports
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const zetaSdk = require("@zetamarkets/sdk");
 
 describe("ZetaHealthMonitor", () => {
   let monitor: ZetaHealthMonitor;
 
   beforeEach(() => {
-    const mockConnection = {} as Connection;
-    const zetaClient = new ZetaClient(mockConnection);
-    monitor = new ZetaHealthMonitor(zetaClient);
+    // Create a mock ZetaClient-like object instead of calling the real constructor
+    const mockZetaClient = {} as any;
+    monitor = new ZetaHealthMonitor(mockZetaClient);
   });
 
   test("getHealthState returns valid state", async () => {

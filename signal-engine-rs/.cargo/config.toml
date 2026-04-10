@@ -1,2 +1,4 @@
+# NOTE: Do NOT use absolute or Windows-specific paths here.
+# This file is committed and must work on all platforms (CI runs on Linux).
 [build]
-target-dir = "C:\\dev\\cargo-target\\signal-engine-rs"
+target-dir = "target"
