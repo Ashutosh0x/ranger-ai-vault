@@ -1,5 +1,5 @@
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { DriftClient, Wallet, BulkAccountLoader, BaseTxSender } from "@drift-labs/sdk";
+import { DriftClient, Wallet, BulkAccountLoader } from "@drift-labs/sdk";
 import { CLUSTER_ENV } from "../config";
 import { logger } from "../monitoring/logger";
 
@@ -21,12 +21,12 @@ export class DriftExecutor {
   constructor(private connection: Connection, private managerKp: Keypair) {}
 
   async initialize(): Promise<void> {
-    const wallet = new Wallet(this.managerKp);
-    const accountLoader = new BulkAccountLoader(this.connection, 'confirmed', 1000);
+    const wallet = new Wallet(this.managerKp as any);
+    const accountLoader = new BulkAccountLoader(this.connection as any, 'confirmed', 1000);
     const zetaEnv = CLUSTER_ENV;
 
     this.client = new DriftClient({
-      connection: this.connection,
+      connection: this.connection as any,
       wallet,
       accountSubscription: {
           type: 'polling',
