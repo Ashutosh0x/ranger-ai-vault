@@ -95,7 +95,7 @@ export class KeeperLoop {
   private flashExecutor!: FlashExecutor;
 
   private connection!: Connection;
-  private zetaClient!: ZetaClient;
+  private zetaClient!: any; // ZetaClient from require() — use any until SDK refactor
   private initialized: boolean = false;
 
   // I2: Circuit breaker for tick failures

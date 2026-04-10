@@ -24,6 +24,7 @@
 name: "Security Audit Pipeline"
 
 on:
+  workflow_call:
   push:
     branches: [main, develop]
   pull_request:
