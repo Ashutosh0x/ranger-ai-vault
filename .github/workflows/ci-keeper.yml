@@ -27,7 +27,7 @@ jobs:
           cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: TypeScript compile (strict check)
         run: |
@@ -84,7 +84,7 @@ jobs:
           cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run Jest tests
         env:
@@ -122,7 +122,7 @@ jobs:
           cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Validate full import chain (16 modules)
         env:
@@ -206,7 +206,7 @@ jobs:
           cache-dependency-path: keeper/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Keeper dry run (validate startup sequence)
         env:
