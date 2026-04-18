@@ -28,10 +28,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Check formatting
-        run: cargo fmt -- --check || true
+        run: cargo fmt -- --check
 
       - name: Clippy lints
-        run: cargo clippy -- -D warnings || true
+        run: cargo clippy -- -D warnings
 
       - name: Build
         run: cargo build --release
