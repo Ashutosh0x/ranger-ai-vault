@@ -9,9 +9,9 @@
 | Tool | Version | Purpose |
 |------|---------|---------|
 | Node.js | 18+ | Vault scripts, keeper bot, dashboard |
-| Python | 3.10+ | Signal engine, ML models, backtesting |
+| Rust | 1.86+ | Signal engine API runtime |
 | Solana CLI | 1.18+ | Keypair generation, devnet/mainnet interaction |
-| pnpm or npm | Latest | Node.js package manager |
+| npm | Latest | Node.js package manager |
 | Git | 2.30+ | Version control |
 | Docker | 24+ | Production deployment (optional) |
 | GitHub CLI | 2.0+ | Repository management and deployment |
@@ -48,10 +48,10 @@ Edit `.env` with your keys:
 make setup
 ```
 
-Or individually:
+Or individually (current monorepo layout):
 ```bash
 cd vault && npm install
-cd ../signal-engine && pip install -r requirements.txt
+cd ../signal-engine-rs && cargo build
 cd ../keeper && npm install
 cd ../dashboard && npm install
 ```
@@ -62,10 +62,9 @@ cd ../dashboard && npm install
 make keygen
 ```
 
-This creates 4 keypairs:
+This creates 3 keypairs:
 - `vault/keys/admin.json` — Vault creator (cold storage)
 - `vault/keys/manager.json` — Fund allocator (warm)
-- `vault/keys/user.json` — Depositor (hot)
 - `keeper/keys/agent.json` — AI attestation signer
 
 ## 4. Deploy Vault (Devnet)
@@ -79,21 +78,20 @@ npm run admin:init-strategies
 npm run admin:lp-metadata
 ```
 
-## 5. Train Models
+## 5. Build Signal Engine
 
 ```bash
-cd signal-engine
-pip install -r requirements.txt
-python training/train_models.py
-python training/backtest.py
+cd signal-engine-rs
+cargo test
+cargo run --release
 ```
 
 ## 6. Start Services (Development)
 
 ```bash
 # Terminal 1: Signal Engine
-cd signal-engine
-python -m uvicorn src.signal_server:app --port 8080
+cd signal-engine-rs
+cargo run --release
 
 # Terminal 2: Keeper Bot
 cd keeper
@@ -145,7 +143,7 @@ git push origin main
 make test-all
 
 # Individual packages
-cd signal-engine && python -m pytest tests/ -v
+cd signal-engine-rs && cargo test
 cd keeper && npx jest --config tests/jest.config.ts
 cd dashboard && npm run build
 ```

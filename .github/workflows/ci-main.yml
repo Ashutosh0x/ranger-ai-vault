@@ -22,7 +22,7 @@ permissions:
   id-token: write
 
 env:
-  NODE_VERSION: "22"
+  NODE_VERSION: "20"
   PYTHON_VERSION: "3.10"
   SOLANA_VERSION: "1.18.17"
 
