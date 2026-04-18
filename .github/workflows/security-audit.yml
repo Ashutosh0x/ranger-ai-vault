@@ -45,7 +45,7 @@ permissions:
   pull-requests: write   # PR comment bot
 
 env:
-  NODE_VERSION: "22"
+  NODE_VERSION: "20"
   RUST_TOOLCHAIN: "stable"
 
 jobs:
